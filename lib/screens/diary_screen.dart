@@ -32,22 +32,22 @@ class DiaryEntry {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'content': content,
-        'date': date.toIso8601String(),
-        'mood': mood,
-        'imagePath': imagePath,
-      };
+    'id': id,
+    'title': title,
+    'content': content,
+    'date': date.toIso8601String(),
+    'mood': mood,
+    'imagePath': imagePath,
+  };
 
   factory DiaryEntry.fromJson(Map<String, dynamic> json) => DiaryEntry(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        content: json['content'] as String,
-        date: DateTime.parse(json['date'] as String),
-        mood: json['mood'] as String? ?? 'happy',
-        imagePath: json['imagePath'] as String?,
-      );
+    id: json['id'] as String,
+    title: json['title'] as String,
+    content: json['content'] as String,
+    date: DateTime.parse(json['date'] as String),
+    mood: json['mood'] as String? ?? 'happy',
+    imagePath: json['imagePath'] as String?,
+  );
 }
 
 class DiaryScreen extends StatefulWidget {
@@ -88,7 +88,9 @@ class _DiaryScreenState extends State<DiaryScreen> {
   Future<void> _showDiaryDialog({DiaryEntry? existing}) async {
     final loc = AppLocalizations.of(context);
     final titleController = TextEditingController(text: existing?.title ?? '');
-    final contentController = TextEditingController(text: existing?.content ?? '');
+    final contentController = TextEditingController(
+      text: existing?.content ?? '',
+    );
     String selectedMood = existing?.mood ?? 'happy';
     String? imagePath = existing?.imagePath;
 
@@ -96,16 +98,20 @@ class _DiaryScreenState extends State<DiaryScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: Text(existing != null
-              ? (loc.translate('editDiary') ?? '编辑日记')
-              : (loc.translate('writeDiary') ?? '写日记')),
+          title: Text(
+            existing != null
+                ? (loc.translate('editDiary') ?? '编辑日记')
+                : (loc.translate('writeDiary') ?? '写日记'),
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   loc.translate('todayMood') ?? '今天的心情：',
-                  style: TextStyle(color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.7)),
+                  style: TextStyle(
+                    color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.7),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -127,7 +133,10 @@ class _DiaryScreenState extends State<DiaryScreen> {
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(entry.value, style: const TextStyle(fontSize: 30)),
+                        child: Text(
+                          entry.value,
+                          style: const TextStyle(fontSize: 30),
+                        ),
                       ),
                     );
                   }).toList(),
@@ -202,14 +211,21 @@ class _DiaryScreenState extends State<DiaryScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(loc.translate('cancel') ?? '取消')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(loc.translate('cancel') ?? '取消'),
+            ),
             FilledButton(
               onPressed: () {
                 final title = titleController.text.trim();
                 final content = contentController.text.trim();
                 if (title.isEmpty && content.isEmpty) {
                   ScaffoldMessenger.of(ctx).showSnackBar(
-                    SnackBar(content: Text(loc.translate('diaryEmpty') ?? '标题和内容不能都为空')),
+                    SnackBar(
+                      content: Text(
+                        loc.translate('diaryEmpty') ?? '标题和内容不能都为空',
+                      ),
+                    ),
                   );
                   return;
                 }
@@ -256,9 +272,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
   void _viewEntry(DiaryEntry entry) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => DiaryDetailPage(entry: entry),
-      ),
+      MaterialPageRoute(builder: (_) => DiaryDetailPage(entry: entry)),
     );
   }
 
@@ -272,7 +286,10 @@ class _DiaryScreenState extends State<DiaryScreen> {
           '${loc.translate('confirmDeleteDiary') ?? '确定删除'}「${entry.title.isNotEmpty ? entry.title : (loc.translate('untitled') ?? '无标题')}」?',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.translate('cancel') ?? '取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(loc.translate('cancel') ?? '取消'),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(loc.translate('delete') ?? '删除'),
@@ -308,13 +325,25 @@ class _DiaryScreenState extends State<DiaryScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.menu_book, size: 80, color: colorScheme.primary.withOpacity(0.3)),
+                  Icon(
+                    Icons.menu_book,
+                    size: 80,
+                    color: colorScheme.primary.withOpacity(0.3),
+                  ),
                   const SizedBox(height: 16),
-                  Text(loc.translate('noDiary') ?? '还没有日记',
-                      style: TextStyle(color: colorScheme.onSurface.withOpacity(0.6))),
+                  Text(
+                    loc.translate('noDiary') ?? '还没有日记',
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text(loc.translate('addDiaryHint') ?? '点击右下角 + 开始记录',
-                      style: TextStyle(color: colorScheme.onSurface.withOpacity(0.4))),
+                  Text(
+                    loc.translate('addDiaryHint') ?? '点击右下角 + 开始记录',
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withOpacity(0.4),
+                    ),
+                  ),
                 ],
               ),
             )
@@ -347,23 +376,35 @@ class _DiaryScreenState extends State<DiaryScreen> {
                                   entry.title.isNotEmpty
                                       ? entry.title
                                       : (loc.translate('untitled') ?? '无标题'),
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 if (entry.content.isNotEmpty)
                                   Text(
                                     entry.content,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)),
+                                    style: TextStyle(
+                                      color: colorScheme.onSurface.withOpacity(
+                                        0.6,
+                                      ),
+                                    ),
                                   ),
                                 Text(
                                   dateStr,
-                                  style: TextStyle(color: colorScheme.onSurface.withOpacity(0.4), fontSize: 12),
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface.withOpacity(
+                                      0.4,
+                                    ),
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          if (entry.imagePath != null && entry.imagePath!.isNotEmpty)
+                          if (entry.imagePath != null &&
+                              entry.imagePath!.isNotEmpty)
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: Image.file(
@@ -401,7 +442,11 @@ class DiaryDetailPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(entry.title.isNotEmpty ? entry.title : (loc.translate('untitled') ?? '无标题')),
+        title: Text(
+          entry.title.isNotEmpty
+              ? entry.title
+              : (loc.translate('untitled') ?? '无标题'),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -419,8 +464,15 @@ class DiaryDetailPage extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(dateStr, style: TextStyle(color: colorScheme.onSurface.withOpacity(0.5))),
-                    Text('${loc.translate('mood') ?? '心情'}：${moodMap[entry.mood] ?? ""}'),
+                    Text(
+                      dateStr,
+                      style: TextStyle(
+                        color: colorScheme.onSurface.withOpacity(0.5),
+                      ),
+                    ),
+                    Text(
+                      '${loc.translate('mood') ?? '心情'}：${moodMap[entry.mood] ?? ""}',
+                    ),
                   ],
                 ),
               ],
@@ -437,7 +489,10 @@ class DiaryDetailPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
             ],
-            Text(entry.content, style: const TextStyle(fontSize: 16, height: 1.5)),
+            Text(
+              entry.content,
+              style: const TextStyle(fontSize: 16, height: 1.5),
+            ),
           ],
         ),
       ),

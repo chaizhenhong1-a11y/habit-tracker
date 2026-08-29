@@ -43,12 +43,16 @@ class _LoginScreenState extends State<LoginScreen> {
     final registered = await _getRegisteredUser();
     final loc = AppLocalizations.of(context);
 
-    if (username == registered['username'] && password == registered['password']) {
+    if (username == registered['username'] &&
+        password == registered['password']) {
       await _setLoggedIn(true);
       widget.onLoginSuccess();
     } else {
       if (!mounted) return;
-      _showCustomSnackBar(loc.translate('loginError') ?? '用户名或密码错误', isError: true);
+      _showCustomSnackBar(
+        loc.translate('loginError') ?? '用户名或密码错误',
+        isError: true,
+      );
     }
 
     if (mounted) setState(() => _isLoading = false);
@@ -59,13 +63,18 @@ class _LoginScreenState extends State<LoginScreen> {
       SnackBar(
         content: Row(
           children: [
-            Icon(isError ? Icons.error_outline : Icons.info_outline, color: Colors.white),
+            Icon(
+              isError ? Icons.error_outline : Icons.info_outline,
+              color: Colors.white,
+            ),
             const SizedBox(width: 12),
             Text(message, style: const TextStyle(fontWeight: FontWeight.w500)),
           ],
         ),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: isError ? Colors.redAccent.shade400 : Colors.blueGrey.shade800,
+        backgroundColor: isError
+            ? Colors.redAccent.shade400
+            : Colors.blueGrey.shade800,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 4,
       ),
@@ -128,7 +137,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     Center(
                       child: Text(
                         loc.translate('welcomeBack') ?? '欢迎回来',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: colorScheme.onSurface,
                               letterSpacing: 1,
@@ -140,8 +150,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         loc.translate('appSubtitle') ?? '发现更好的自己 · 习惯打卡',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant.withOpacity(0.8),
-                            ),
+                          color: colorScheme.onSurfaceVariant.withOpacity(0.8),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 40),
@@ -165,19 +175,26 @@ class _LoginScreenState extends State<LoginScreen> {
                             controller: _usernameController,
                             decoration: InputDecoration(
                               labelText: loc.translate('username') ?? '用户名',
-                              prefixIcon: const Icon(Icons.person_outline_rounded),
+                              prefixIcon: const Icon(
+                                Icons.person_outline_rounded,
+                              ),
                               filled: true,
-                              fillColor: colorScheme.surfaceVariant.withOpacity(0.3),
+                              fillColor: colorScheme.surfaceVariant.withOpacity(
+                                0.3,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide.none,
                               ),
-                              floatingLabelBehavior: FloatingLabelBehavior.never,
-                              hintText: loc.translate('usernameHint') ?? '请输入用户名',
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.never,
+                              hintText:
+                                  loc.translate('usernameHint') ?? '请输入用户名',
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return loc.translate('usernameRequired') ?? '请输入用户名';
+                                return loc.translate('usernameRequired') ??
+                                    '请输入用户名';
                               }
                               return null;
                             },
@@ -188,28 +205,40 @@ class _LoginScreenState extends State<LoginScreen> {
                             obscureText: _obscurePassword,
                             decoration: InputDecoration(
                               labelText: loc.translate('password') ?? '密码',
-                              prefixIcon: const Icon(Icons.lock_outline_rounded),
+                              prefixIcon: const Icon(
+                                Icons.lock_outline_rounded,
+                              ),
                               filled: true,
-                              fillColor: colorScheme.surfaceVariant.withOpacity(0.3),
+                              fillColor: colorScheme.surfaceVariant.withOpacity(
+                                0.3,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide.none,
                               ),
-                              floatingLabelBehavior: FloatingLabelBehavior.never,
-                              hintText: loc.translate('passwordHint') ?? '请输入密码',
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.never,
+                              hintText:
+                                  loc.translate('passwordHint') ?? '请输入密码',
                               suffixIcon: IconButton(
-                                icon: Icon(_obscurePassword
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined),
-                                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
                               ),
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return loc.translate('passwordRequired') ?? '请输入密码';
+                                return loc.translate('passwordRequired') ??
+                                    '请输入密码';
                               }
                               if (value.length < 3) {
-                                return loc.translate('passwordTooShort') ?? '密码至少3位';
+                                return loc.translate('passwordTooShort') ??
+                                    '密码至少3位';
                               }
                               return null;
                             },
@@ -237,12 +266,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                 width: 24,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : Text(
                                 loc.translate('login') ?? '登 录',
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 2),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 2,
+                                ),
                               ),
                       ),
                     ),
@@ -253,7 +288,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () async {
                           final result = await Navigator.push<bool>(
                             context,
-                            MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const RegisterScreen(),
+                            ),
                           );
                           if (result == true) {
                             if (!mounted) return;
@@ -262,14 +299,22 @@ class _LoginScreenState extends State<LoginScreen> {
                               SnackBar(
                                 content: Row(
                                   children: [
-                                    const Icon(Icons.check_circle_outline, color: Colors.white),
+                                    const Icon(
+                                      Icons.check_circle_outline,
+                                      color: Colors.white,
+                                    ),
                                     const SizedBox(width: 12),
-                                    Text(loc.translate('registerSuccessHint') ?? '注册成功，请登录'),
+                                    Text(
+                                      loc.translate('registerSuccessHint') ??
+                                          '注册成功，请登录',
+                                    ),
                                   ],
                                 ),
                                 backgroundColor: Colors.green,
                                 behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
                             );
                           }

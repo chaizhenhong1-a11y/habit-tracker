@@ -45,9 +45,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final loc = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            loc.translate('alreadyRegistered') ?? '该用户名已被注册',
-          ),
+          content: Text(loc.translate('alreadyRegistered') ?? '该用户名已被注册'),
           backgroundColor: Colors.redAccent,
           duration: const Duration(seconds: 2),
         ),
@@ -113,9 +111,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Text(
                   loc.translate('createAccount') ?? '创建新账户',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
@@ -161,10 +159,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     hintText: loc.translate('passwordHint') ?? '请输入密码',
                     prefixIcon: const Icon(Icons.lock_outline_rounded),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword
-                          ? Icons.visibility_off_rounded
-                          : Icons.visibility_rounded),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off_rounded
+                            : Icons.visibility_rounded,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -176,14 +177,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (value == null || value.trim().isEmpty) {
                       return loc.translate('passwordRequired') ?? '请输入密码';
                     }
-                    if (value.length < 8) {   // 改为 8 位
+                    if (value.length < 8) {
+                      // 改为 8 位
                       return loc.translate('passwordTooShort') ?? '密码至少8位';
                     }
                     final hasUpper = value.contains(RegExp(r'[A-Z]'));
                     final hasLower = value.contains(RegExp(r'[a-z]'));
                     final hasDigit = value.contains(RegExp(r'[0-9]'));
                     if (!hasUpper || !hasLower || !hasDigit) {
-                      return loc.translate('passwordTooWeak') ?? '密码需包含大写、小写字母和数字';
+                      return loc.translate('passwordTooWeak') ??
+                          '密码需包含大写、小写字母和数字';
                     }
                     return null;
                   },
@@ -198,10 +201,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     labelText: loc.translate('confirmPassword') ?? '确认密码',
                     prefixIcon: const Icon(Icons.lock_outline_rounded),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscureConfirm
-                          ? Icons.visibility_off_rounded
-                          : Icons.visibility_rounded),
-                      onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                      icon: Icon(
+                        _obscureConfirm
+                            ? Icons.visibility_off_rounded
+                            : Icons.visibility_rounded,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscureConfirm = !_obscureConfirm),
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -240,7 +246,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         )
                       : Text(
                           loc.translate('register') ?? '注册',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
                 const SizedBox(height: 16),
@@ -251,7 +260,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     Text(
                       loc.translate('hasAccount') ?? '已有账户？',
-                      style: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)),
+                      style: TextStyle(
+                        color: colorScheme.onSurface.withOpacity(0.6),
+                      ),
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context),

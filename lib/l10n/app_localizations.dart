@@ -12,23 +12,24 @@ class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const List<Locale> supportedLocales = [
-    Locale('en'),
-    Locale('zh'),
-  ];
+  static const List<Locale> supportedLocales = [Locale('en'), Locale('zh')];
 
   Future<void> load() async {
-    final jsonString = await rootBundle.loadString('assets/l10n/${locale.languageCode}.json');
+    final jsonString = await rootBundle.loadString(
+      'assets/l10n/${locale.languageCode}.json',
+    );
     final Map<String, dynamic> jsonMap = json.decode(jsonString);
     _strings = jsonMap.map((key, value) => MapEntry(key, value.toString()));
   }
 
   String? translate(String key) => _strings?[key];
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override

@@ -21,23 +21,24 @@ class PlanItem {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'notes': notes,
-        'dueDate': dueDate?.toIso8601String(),
-        'isCompleted': isCompleted,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'title': title,
+    'notes': notes,
+    'dueDate': dueDate?.toIso8601String(),
+    'isCompleted': isCompleted,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory PlanItem.fromJson(Map<String, dynamic> json) => PlanItem(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        notes: json['notes'] as String? ?? '',
-        dueDate:
-            json['dueDate'] != null ? DateTime.parse(json['dueDate'] as String) : null,
-        isCompleted: json['isCompleted'] as bool? ?? false,
-        createdAt: DateTime.parse(json['createdAt'] as String),
-      );
+    id: json['id'] as String,
+    title: json['title'] as String,
+    notes: json['notes'] as String? ?? '',
+    dueDate: json['dueDate'] != null
+        ? DateTime.parse(json['dueDate'] as String)
+        : null,
+    isCompleted: json['isCompleted'] as bool? ?? false,
+    createdAt: DateTime.parse(json['createdAt'] as String),
+  );
 }
 
 class PlanScreen extends StatefulWidget {
@@ -89,9 +90,11 @@ class _PlanScreenState extends State<PlanScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: Text(existing != null 
-              ? (loc.translate('editPlan') ?? '编辑计划') 
-              : (loc.translate('addPlan') ?? '添加计划')),
+          title: Text(
+            existing != null
+                ? (loc.translate('editPlan') ?? '编辑计划')
+                : (loc.translate('addPlan') ?? '添加计划'),
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -124,7 +127,9 @@ class _PlanScreenState extends State<PlanScreen> {
                           context: ctx,
                           initialDate: selectedDate ?? DateTime.now(),
                           firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 365 * 5),
+                          ),
                         );
                         if (picked != null) {
                           setDialogState(() {
@@ -154,14 +159,17 @@ class _PlanScreenState extends State<PlanScreen> {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(loc.translate('cancel') ?? '取消')),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(loc.translate('cancel') ?? '取消'),
+            ),
             FilledButton(
               onPressed: () {
                 final title = titleController.text.trim();
                 if (title.isEmpty) {
                   ScaffoldMessenger.of(ctx).showSnackBar(
-                    SnackBar(content: Text(loc.translate('titleRequired') ?? '标题不能为空')),
+                    SnackBar(
+                      content: Text(loc.translate('titleRequired') ?? '标题不能为空'),
+                    ),
                   );
                   return;
                 }
@@ -216,9 +224,14 @@ class _PlanScreenState extends State<PlanScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(loc.translate('deletePlan') ?? '删除计划'),
-        content: Text('${loc.translate('confirmDeletePlan') ?? '确定删除'}「${plan.title}」?'),
+        content: Text(
+          '${loc.translate('confirmDeletePlan') ?? '确定删除'}「${plan.title}」?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.translate('cancel') ?? '取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(loc.translate('cancel') ?? '取消'),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(loc.translate('delete') ?? '删除'),
@@ -254,13 +267,25 @@ class _PlanScreenState extends State<PlanScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.task_alt, size: 80, color: colorScheme.primary.withOpacity(0.3)),
+                  Icon(
+                    Icons.task_alt,
+                    size: 80,
+                    color: colorScheme.primary.withOpacity(0.3),
+                  ),
                   const SizedBox(height: 16),
-                  Text(loc.translate('noPlans') ?? '还没有计划',
-                      style: TextStyle(color: colorScheme.onSurface.withOpacity(0.6))),
+                  Text(
+                    loc.translate('noPlans') ?? '还没有计划',
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text(loc.translate('addPlanHint') ?? '点击右下角 + 添加计划',
-                      style: TextStyle(color: colorScheme.onSurface.withOpacity(0.4))),
+                  Text(
+                    loc.translate('addPlanHint') ?? '点击右下角 + 添加计划',
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withOpacity(0.4),
+                    ),
+                  ),
                 ],
               ),
             )
@@ -282,7 +307,9 @@ class _PlanScreenState extends State<PlanScreen> {
                     title: Text(
                       plan.title,
                       style: TextStyle(
-                        decoration: plan.isCompleted ? TextDecoration.lineThrough : null,
+                        decoration: plan.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
                         color: plan.isCompleted
                             ? colorScheme.onSurface.withOpacity(0.5)
                             : null,
@@ -292,10 +319,19 @@ class _PlanScreenState extends State<PlanScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (plan.notes.isNotEmpty)
-                          Text(plan.notes, maxLines: 2, overflow: TextOverflow.ellipsis),
+                          Text(
+                            plan.notes,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         if (dueDateStr != null)
-                          Text('${loc.translate('dueDateShort') ?? '截止'}：$dueDateStr',
-                              style: TextStyle(color: colorScheme.primary, fontSize: 12)),
+                          Text(
+                            '${loc.translate('dueDateShort') ?? '截止'}：$dueDateStr',
+                            style: TextStyle(
+                              color: colorScheme.primary,
+                              fontSize: 12,
+                            ),
+                          ),
                       ],
                     ),
                     trailing: IconButton(

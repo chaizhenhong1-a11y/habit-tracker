@@ -26,7 +26,9 @@ class _HabitCalendarScreenState extends State<HabitCalendarScreen> {
 
   Set<String> _completedDatesInMonth() {
     final yearMonth = DateFormat('yyyy-MM').format(_currentMonth);
-    return _completedDates.where((dateStr) => dateStr.startsWith(yearMonth)).toSet();
+    return _completedDates
+        .where((dateStr) => dateStr.startsWith(yearMonth))
+        .toSet();
   }
 
   List<DateTime?> _generateMonthDays() {
@@ -88,7 +90,10 @@ class _HabitCalendarScreenState extends State<HabitCalendarScreen> {
     if (locale.languageCode == 'zh') {
       monthTitle = DateFormat('yyyy年 M月').format(_currentMonth);
     } else {
-      monthTitle = DateFormat('MMMM yyyy', locale.toString()).format(_currentMonth);
+      monthTitle = DateFormat(
+        'MMMM yyyy',
+        locale.toString(),
+      ).format(_currentMonth);
     }
 
     return Scaffold(
@@ -112,12 +117,15 @@ class _HabitCalendarScreenState extends State<HabitCalendarScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(icon: const Icon(Icons.chevron_left), onPressed: _previousMonth),
-                Text(
-                  monthTitle,
-                  style: Theme.of(context).textTheme.titleLarge,
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  onPressed: _previousMonth,
                 ),
-                IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth),
+                Text(monthTitle, style: Theme.of(context).textTheme.titleLarge),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  onPressed: _nextMonth,
+                ),
               ],
             ),
           ),
@@ -129,7 +137,10 @@ class _HabitCalendarScreenState extends State<HabitCalendarScreen> {
                   child: Center(
                     child: Text(
                       day,
-                      style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface.withOpacity(0.6)),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface.withOpacity(0.6),
+                      ),
                     ),
                   ),
                 );
@@ -146,7 +157,9 @@ class _HabitCalendarScreenState extends State<HabitCalendarScreen> {
                   if (day == null) return const SizedBox.shrink();
                   final dateStr = DateFormat('yyyy-MM-dd').format(day);
                   final isCompleted = completedSet.contains(dateStr);
-                  final isToday = DateFormat('yyyy-MM-dd').format(DateTime.now()) == dateStr;
+                  final isToday =
+                      DateFormat('yyyy-MM-dd').format(DateTime.now()) ==
+                      dateStr;
                   return GestureDetector(
                     onTap: () => _toggleDate(day),
                     child: Container(
@@ -155,17 +168,23 @@ class _HabitCalendarScreenState extends State<HabitCalendarScreen> {
                         color: isCompleted
                             ? colorScheme.primary.withOpacity(0.3)
                             : isToday
-                                ? colorScheme.secondaryContainer.withOpacity(0.5)
-                                : null,
+                            ? colorScheme.secondaryContainer.withOpacity(0.5)
+                            : null,
                         borderRadius: BorderRadius.circular(8),
-                        border: isToday ? Border.all(color: colorScheme.primary, width: 2) : null,
+                        border: isToday
+                            ? Border.all(color: colorScheme.primary, width: 2)
+                            : null,
                       ),
                       child: Center(
                         child: Text(
                           '${day.day}',
                           style: TextStyle(
-                            color: isCompleted ? colorScheme.primary : colorScheme.onSurface,
-                            fontWeight: isCompleted || isToday ? FontWeight.bold : null,
+                            color: isCompleted
+                                ? colorScheme.primary
+                                : colorScheme.onSurface,
+                            fontWeight: isCompleted || isToday
+                                ? FontWeight.bold
+                                : null,
                           ),
                         ),
                       ),
