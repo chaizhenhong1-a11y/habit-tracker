@@ -27,7 +27,7 @@ class AppPreferences {
   }
 
   Color get seedColor =>
-      Color(_preferences.getInt(_seedColorKey) ?? defaultSeedColor.value);
+      Color(_preferences.getInt(_seedColorKey) ?? defaultSeedColor.toARGB32());
 
   bool get isLoggedIn => _preferences.getBool(_isLoggedInKey) ?? false;
 
@@ -40,7 +40,7 @@ class AppPreferences {
   }
 
   Future<void> setSeedColor(Color color) {
-    return _preferences.setInt(_seedColorKey, color.value);
+    return _preferences.setInt(_seedColorKey, color.toARGB32());
   }
 
   Future<void> setLoggedIn(bool value) {

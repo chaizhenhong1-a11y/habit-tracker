@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import '../features/auth/presentation/pages/login_page.dart';
 import '../l10n/app_localizations.dart';
-import '../screens/login_screen.dart';
 import 'app_controller.dart';
 import 'navigation/main_navigation.dart';
 import 'theme/app_theme.dart';
@@ -43,7 +43,7 @@ class HabitTrackerApp extends StatelessWidget {
                     controller.setLoggedIn(false);
                   },
                 )
-              : LoginScreen(
+              : LoginPage(
                   onLoginSuccess: () {
                     controller.setLoggedIn(true);
                   },

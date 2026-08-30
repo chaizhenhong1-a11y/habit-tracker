@@ -2,11 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../../features/habits/presentation/pages/habit_list_page.dart';
 import '../../l10n/app_localizations.dart';
-import '../../screens/data_screen.dart';
-import '../../screens/habit_list_screen.dart';
-import '../../screens/profile_screen.dart';
-import '../../screens/wish_screen.dart';
+import '../../features/analytics/presentation/pages/data_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/wishes/presentation/pages/wish_page.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({
@@ -35,8 +35,8 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
   late final List<Widget> _pages;
-  final _wishKey = GlobalKey<WishScreenState>();
-  final _dataKey = GlobalKey<DataScreenState>();
+  final _wishKey = GlobalKey<WishPageState>();
+  final _dataKey = GlobalKey<DataPageState>();
 
   @override
   void initState() {
@@ -46,15 +46,15 @@ class _MainNavigationState extends State<MainNavigation> {
 
   List<Widget> _buildPages() {
     return [
-      const HabitListScreen(),
-      WishScreen(key: _wishKey),
-      DataScreen(key: _dataKey),
+      const HabitListPage(),
+      WishPage(key: _wishKey),
+      DataPage(key: _dataKey),
       _buildProfileScreen(),
     ];
   }
 
-  ProfileScreen _buildProfileScreen() {
-    return ProfileScreen(
+  ProfilePage _buildProfileScreen() {
+    return ProfilePage(
       themeMode: widget.themeMode,
       seedColor: widget.seedColor,
       locale: widget.locale,
@@ -97,8 +97,8 @@ class _MainNavigationState extends State<MainNavigation> {
             boxShadow: [
               BoxShadow(
                 color: isDark
-                    ? Colors.black.withOpacity(0.3)
-                    : colorScheme.primary.withOpacity(0.06),
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : colorScheme.primary.withValues(alpha: 0.06),
                 blurRadius: 30,
                 offset: const Offset(0, 12),
               ),
@@ -110,27 +110,25 @@ class _MainNavigationState extends State<MainNavigation> {
               filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
               child: NavigationBarTheme(
                 data: NavigationBarThemeData(
-                  indicatorColor: colorScheme.primary.withOpacity(0.12),
+                  indicatorColor: colorScheme.primary.withValues(alpha: 0.12),
                   labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                    final isSelected = states.contains(WidgetState.selected);
+                    final selected = states.contains(WidgetState.selected);
                     return TextStyle(
                       fontSize: 11,
-                      fontWeight: isSelected
-                          ? FontWeight.w800
-                          : FontWeight.w500,
+                      fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
                       letterSpacing: 0.5,
-                      color: isSelected
+                      color: selected
                           ? colorScheme.primary
-                          : colorScheme.onSurface.withOpacity(0.4),
+                          : colorScheme.onSurface.withValues(alpha: 0.4),
                     );
                   }),
                   iconTheme: WidgetStateProperty.resolveWith((states) {
-                    final isSelected = states.contains(WidgetState.selected);
+                    final selected = states.contains(WidgetState.selected);
                     return IconThemeData(
                       size: 24,
-                      color: isSelected
+                      color: selected
                           ? colorScheme.primary
-                          : colorScheme.onSurface.withOpacity(0.4),
+                          : colorScheme.onSurface.withValues(alpha: 0.4),
                     );
                   }),
                 ),
@@ -138,8 +136,8 @@ class _MainNavigationState extends State<MainNavigation> {
                   selectedIndex: _selectedIndex,
                   onDestinationSelected: _selectDestination,
                   backgroundColor: isDark
-                      ? const Color(0xFF1E1E2A).withOpacity(0.7)
-                      : Colors.white.withOpacity(0.75),
+                      ? const Color(0xFF1E1E2A).withValues(alpha: 0.7)
+                      : Colors.white.withValues(alpha: 0.75),
                   height: 76,
                   elevation: 0,
                   destinations: [

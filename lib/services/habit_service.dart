@@ -1,40 +1,23 @@
-import 'package:hive_flutter/hive_flutter.dart';
-import '../models/habit.dart';
+import '../features/habits/data/repositories/hive_habit_repository.dart';
+import '../features/habits/domain/entities/habit.dart';
+import '../features/habits/domain/repositories/habit_repository.dart';
 
+@Deprecated(
+  'Use HabitRepository/HiveHabitRepository from features/habits instead.',
+)
 class HabitService {
-  final Box _box = Hive.box('habits');
+  HabitService({HabitRepository? repository})
+    : _repository = repository ?? HiveHabitRepository.fromHabitsBox();
 
-  List<Habit> getAllHabits() {
-    final habits = <Habit>[];
-    for (final key in _box.keys) {
-      final data = _box.get(key);
-      if (data != null) {
-        habits.add(Habit.fromMap(Map<String, dynamic>.from(data)));
-      }
-    }
-    habits.sort((a, b) => b.id.compareTo(a.id));
-    return habits;
-  }
+  final HabitRepository _repository;
 
-  void addHabit(Habit habit) {
-    _box.put(habit.id, habit.toMap());
-  }
+  List<Habit> getAllHabits() => _repository.getAll();
 
-  void updateHabit(Habit habit) {
-    _box.put(habit.id, habit.toMap());
-  }
+  void addHabit(Habit habit) => _repository.save(habit);
 
-  void deleteHabit(String id) {
-    _box.delete(id);
-  }
+  void updateHabit(Habit habit) => _repository.save(habit);
 
-  // 新增：保存整个习惯列表（用于拖拽排序后更新顺序）
-  void updateOrder(List<Habit> habits) {
-    // 清空盒子
-    _box.clear();
-    // 重新按顺序添加
-    for (final habit in habits) {
-      _box.put(habit.id, habit.toMap());
-    }
-  }
+  void deleteHabit(String id) => _repository.deleteById(id);
+
+  void updateOrder(List<Habit> habits) => _repository.replaceAll(habits);
 }

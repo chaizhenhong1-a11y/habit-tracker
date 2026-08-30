@@ -32,7 +32,7 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> changeSeedColor(Color color) async {
-    if (_seedColor.value == color.value) return;
+    if (_seedColor.toARGB32() == color.toARGB32()) return;
     _seedColor = color;
     notifyListeners();
     await _preferences.setSeedColor(color);
