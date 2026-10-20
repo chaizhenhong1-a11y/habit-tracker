@@ -38,15 +38,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  static const _themeColors = <Color>[
-    Color(0xFF173F30),
-    Color(0xFF5F7A68),
-    Color(0xFFD8AD69),
-    Color(0xFFB66F5B),
-    Color(0xFF486B75),
-    Color(0xFF7C6A58),
-  ];
-
   static const _presetAvatars = <String>[
     'assets/images/如花.png',
     'assets/images/坤哥.png',
@@ -83,7 +74,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _editUsername() async {
     final loc = AppLocalizations.of(context);
-    final controller = TextEditingController(text: _controller.settings.username);
+    final controller = TextEditingController(
+      text: _controller.settings.username,
+    );
     final value = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -101,7 +94,10 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Text(loc.translate('cancel') ?? '取消'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, controller.text.trim()),
+            onPressed: () => Navigator.pop(
+              dialogContext,
+              controller.text.trim(),
+            ),
             child: Text(loc.translate('save') ?? '保存'),
           ),
         ],
@@ -114,8 +110,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final image = await _picker.pickImage(source: source, imageQuality: 80);
-      if (image != null) await _controller.setAvatarLocalPath(image.path);
+      final image = await _picker.pickImage(
+        source: source,
+        imageQuality: 80,
+      );
+      if (image != null) {
+        await _controller.setAvatarLocalPath(image.path);
+      }
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -142,7 +143,10 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Text(loc.translate('cancel') ?? '取消'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, controller.text.trim()),
+            onPressed: () => Navigator.pop(
+              dialogContext,
+              controller.text.trim(),
+            ),
             child: Text(loc.translate('confirm') ?? '确定'),
           ),
         ],
@@ -257,11 +261,16 @@ class _ProfilePageState extends State<ProfilePage> {
     required VoidCallback onTap,
     bool destructive = false,
   }) {
-    final color = destructive ? Colors.redAccent : Theme.of(context).colorScheme.onSurface;
+    final color = destructive
+        ? Colors.redAccent
+        : Theme.of(context).colorScheme.onSurface;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(icon, color: color),
-      title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+      title: Text(
+        title,
+        style: TextStyle(color: color, fontWeight: FontWeight.w600),
+      ),
       onTap: onTap,
     );
   }
@@ -271,18 +280,30 @@ class _ProfilePageState extends State<ProfilePage> {
       hour: _controller.settings.reminderHour,
       minute: _controller.settings.reminderMinute,
     );
-    final picked = await showTimePicker(context: context, initialTime: current);
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: current,
+    );
     if (!mounted || picked == null || picked == current) return;
-    await _controller.setReminderTime(hour: picked.hour, minute: picked.minute);
+    await _controller.setReminderTime(
+      hour: picked.hour,
+      minute: picked.minute,
+    );
   }
 
   Future<void> _exportData() async {
     final loc = AppLocalizations.of(context);
-    await Clipboard.setData(ClipboardData(text: _controller.exportHabitsJson()));
+    await Clipboard.setData(
+      ClipboardData(text: _controller.exportHabitsJson()),
+    );
     if (!mounted) return;
     HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(loc.translate('dataCopied') ?? '数据已复制到剪贴板')),
+      SnackBar(
+        content: Text(
+          loc.translate('dataCopied') ?? '数据已复制到剪贴板',
+        ),
+      ),
     );
   }
 
@@ -293,7 +314,9 @@ class _ProfilePageState extends State<ProfilePage> {
       if (file.existsSync()) return FileImage(file);
     }
     if (settings.avatarUrl.isEmpty) return null;
-    if (settings.avatarUrl.startsWith('http')) return NetworkImage(settings.avatarUrl);
+    if (settings.avatarUrl.startsWith('http')) {
+      return NetworkImage(settings.avatarUrl);
+    }
     return AssetImage(settings.avatarUrl);
   }
 
@@ -342,9 +365,15 @@ class _ProfilePageState extends State<ProfilePage> {
             decoration: BoxDecoration(
               color: const Color(0xFFFFFCF6),
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF315D43).withValues(alpha: .15)),
+              border: Border.all(
+                color: const Color(0xFF315D43).withValues(alpha: .15),
+              ),
             ),
-            child: const Icon(Icons.camera_alt_rounded, size: 15, color: Color(0xFF173F30)),
+            child: const Icon(
+              Icons.camera_alt_rounded,
+              size: 15,
+              color: Color(0xFF173F30),
+            ),
           ),
         ),
       ],
@@ -355,9 +384,10 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     final settings = _controller.settings;
-    final displayName = settings.username == '用户' || settings.username.isEmpty
-        ? (loc.translate('defaultUser') ?? '用户')
-        : settings.username;
+    final displayName =
+        settings.username == '用户' || settings.username.isEmpty
+            ? (loc.translate('defaultUser') ?? '用户')
+            : settings.username;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -372,7 +402,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: LifePageHeader(
                   eyebrow: 'YOU',
                   title: 'Your life,\nmade intentional.',
-                  subtitle: 'Shape the space around your habits and keep what matters close.',
+                  subtitle:
+                      'Shape the space around your habits and keep what matters close.',
                 ),
               ),
             ),
@@ -391,7 +422,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   child: Row(
                     children: [
-                      GestureDetector(onTap: _changeAvatar, child: _avatar()),
+                      GestureDetector(
+                        onTap: _changeAvatar,
+                        child: _avatar(),
+                      ),
                       const SizedBox(width: 18),
                       Expanded(
                         child: GestureDetector(
@@ -411,10 +445,12 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                loc.translate('tapToChangeAvatar') ?? '点击头像更换 · 点击名字编辑',
+                                loc.translate('tapToChangeAvatar') ??
+                                    '点击头像更换 · 点击名字编辑',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.white.withValues(alpha: .62),
+                                  color:
+                                      Colors.white.withValues(alpha: .62),
                                 ),
                               ),
                             ],
@@ -423,7 +459,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       IconButton(
                         onPressed: _editUsername,
-                        icon: const Icon(Icons.edit_outlined, color: Color(0xFFE2C58A)),
+                        icon: const Icon(
+                          Icons.edit_outlined,
+                          color: Color(0xFFE2C58A),
+                        ),
                       ),
                     ],
                   ),
@@ -435,69 +474,38 @@ class _ProfilePageState extends State<ProfilePage> {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   LifeSectionTitle(
-                    title: loc.translate('personalization') ?? 'Personalization',
-                    caption: 'Make this space feel like yours',
+                    title:
+                        loc.translate('personalization') ?? 'Personalization',
+                    caption: 'Choose how this space feels day to day',
                   ),
                   const SizedBox(height: 12),
                   _group([
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            loc.translate('applyThemeColor') ?? 'Accent color',
-                            style: const TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(height: 14),
-                          Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
-                            children: [
-                              for (final color in _themeColors)
-                                GestureDetector(
-                                  onTap: () => widget.onSeedColorChanged(color),
-                                  child: Container(
-                                    width: 36,
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                      color: color,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: widget.seedColor.toARGB32() == color.toARGB32()
-                                            ? Theme.of(context).colorScheme.onSurface
-                                            : Colors.transparent,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: widget.seedColor.toARGB32() == color.toARGB32()
-                                        ? const Icon(Icons.check_rounded, size: 17, color: Colors.white)
-                                        : null,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(height: 1),
                     _rowAction(
                       icon: Icons.light_mode_outlined,
                       title: loc.translate('lightMode') ?? '浅色模式',
-                      trailing: widget.themeMode == ThemeMode.light ? _checkedIcon() : null,
-                      onTap: () => widget.onThemeModeChanged(ThemeMode.light),
+                      trailing: widget.themeMode == ThemeMode.light
+                          ? _checkedIcon()
+                          : null,
+                      onTap: () =>
+                          widget.onThemeModeChanged(ThemeMode.light),
                     ),
                     _rowAction(
                       icon: Icons.dark_mode_outlined,
                       title: loc.translate('darkMode') ?? '深色模式',
-                      trailing: widget.themeMode == ThemeMode.dark ? _checkedIcon() : null,
-                      onTap: () => widget.onThemeModeChanged(ThemeMode.dark),
+                      trailing: widget.themeMode == ThemeMode.dark
+                          ? _checkedIcon()
+                          : null,
+                      onTap: () =>
+                          widget.onThemeModeChanged(ThemeMode.dark),
                     ),
                     _rowAction(
                       icon: Icons.settings_suggest_outlined,
                       title: loc.translate('systemMode') ?? '跟随系统',
-                      trailing: widget.themeMode == ThemeMode.system ? _checkedIcon() : null,
-                      onTap: () => widget.onThemeModeChanged(ThemeMode.system),
+                      trailing: widget.themeMode == ThemeMode.system
+                          ? _checkedIcon()
+                          : null,
+                      onTap: () =>
+                          widget.onThemeModeChanged(ThemeMode.system),
                     ),
                   ]),
                   const SizedBox(height: 26),
@@ -507,29 +515,50 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 12),
                   _group([
-                    _languageOption('中文', widget.locale.languageCode == 'zh', () => widget.onLocaleChanged(const Locale('zh'))),
-                    _languageOption('English', widget.locale.languageCode == 'en', () => widget.onLocaleChanged(const Locale('en'))),
+                    _languageOption(
+                      '中文',
+                      widget.locale.languageCode == 'zh',
+                      () => widget.onLocaleChanged(const Locale('zh')),
+                    ),
+                    _languageOption(
+                      'English',
+                      widget.locale.languageCode == 'en',
+                      () => widget.onLocaleChanged(const Locale('en')),
+                    ),
                   ]),
                   const SizedBox(height: 26),
                   LifeSectionTitle(
-                    title: loc.translate('coreEfficiency') ?? 'Daily rhythm',
+                    title:
+                        loc.translate('coreEfficiency') ?? 'Daily rhythm',
                     caption: 'Gentle structure for the life you want',
                   ),
                   const SizedBox(height: 12),
                   _group([
                     SwitchListTile(
-                      secondary: const Icon(Icons.notifications_active_outlined, color: Color(0xFF315D43)),
-                      title: Text(loc.translate('dailyReminder') ?? '每日打卡提醒'),
+                      secondary: const Icon(
+                        Icons.notifications_active_outlined,
+                        color: Color(0xFF315D43),
+                      ),
+                      title: Text(
+                        loc.translate('dailyReminder') ?? '每日打卡提醒',
+                      ),
                       value: settings.reminderEnabled,
                       onChanged: _controller.setReminderEnabled,
                     ),
                     if (settings.reminderEnabled)
                       _rowAction(
                         icon: Icons.access_time_rounded,
-                        title: loc.translate('reminderTime') ?? '提醒时间',
+                        title:
+                            loc.translate('reminderTime') ?? '提醒时间',
                         trailing: Text(
-                          TimeOfDay(hour: settings.reminderHour, minute: settings.reminderMinute).format(context),
-                          style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF315D43)),
+                          TimeOfDay(
+                            hour: settings.reminderHour,
+                            minute: settings.reminderMinute,
+                          ).format(context),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF315D43),
+                          ),
                         ),
                         onTap: _pickReminderTime,
                       ),
@@ -544,19 +573,32 @@ class _ProfilePageState extends State<ProfilePage> {
                     _rowAction(
                       icon: Icons.event_note_rounded,
                       title: loc.translate('plan') ?? '我的计划',
-                      subtitle: loc.translate('planSubtitle') ?? '管理日常待办和习惯阶段目标',
-                      onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const PlanPage())),
+                      subtitle: loc.translate('planSubtitle') ??
+                          '管理日常待办和习惯阶段目标',
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => const PlanPage(),
+                        ),
+                      ),
                     ),
                     _rowAction(
                       icon: Icons.auto_stories_outlined,
                       title: loc.translate('diary') ?? '我的日记',
-                      subtitle: loc.translate('diarySubtitle') ?? '记录生活碎念与复盘随笔',
-                      onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const DiaryPage())),
+                      subtitle: loc.translate('diarySubtitle') ??
+                          '记录生活碎念与复盘随笔',
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => const DiaryPage(),
+                        ),
+                      ),
                     ),
                     _rowAction(
                       icon: Icons.ios_share_rounded,
                       title: loc.translate('exportData') ?? '导出所有习惯数据',
-                      subtitle: loc.translate('exportDataSubtitle') ?? '以 JSON 格式备份你的数据',
+                      subtitle: loc.translate('exportDataSubtitle') ??
+                          '以 JSON 格式备份你的数据',
                       onTap: _exportData,
                     ),
                   ]),
@@ -565,11 +607,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     style: TextButton.styleFrom(
                       minimumSize: const Size(double.infinity, 54),
                       foregroundColor: const Color(0xFF9E4D45),
-                      backgroundColor: const Color(0xFF9E4D45).withValues(alpha: .07),
+                      backgroundColor:
+                          const Color(0xFF9E4D45).withValues(alpha: .07),
                     ),
                     onPressed: widget.onLogout,
                     icon: const Icon(Icons.logout_rounded),
-                    label: Text(loc.translate('logout') ?? '退出登录账户'),
+                    label: Text(
+                      loc.translate('logout') ?? '退出登录账户',
+                    ),
                   ),
                 ]),
               ),
@@ -595,7 +640,8 @@ class _ProfilePageState extends State<ProfilePage> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
         width: 38,
         height: 38,
@@ -604,11 +650,24 @@ class _ProfilePageState extends State<ProfilePage> {
           color: const Color(0xFF315D43).withValues(alpha: .08),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: const Color(0xFF315D43), size: 19),
+        child: Icon(
+          icon,
+          color: const Color(0xFF315D43),
+          size: 19,
+        ),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-      subtitle: subtitle == null ? null : Text(subtitle, style: const TextStyle(fontSize: 12)),
-      trailing: trailing ?? const Icon(Icons.chevron_right_rounded, size: 20),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
+      ),
+      subtitle: subtitle == null
+          ? null
+          : Text(subtitle, style: const TextStyle(fontSize: 12)),
+      trailing:
+          trailing ?? const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () {
         HapticFeedback.lightImpact();
         onTap();
@@ -622,10 +681,17 @@ class _ProfilePageState extends State<ProfilePage> {
         size: 20,
       );
 
-  Widget _languageOption(String title, bool selected, VoidCallback onTap) {
+  Widget _languageOption(
+    String title,
+    bool selected,
+    VoidCallback onTap,
+  ) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
       trailing: selected ? _checkedIcon() : null,
       onTap: onTap,
     );
