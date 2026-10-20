@@ -46,7 +46,10 @@ class _MainNavigationState extends State<MainNavigation> {
   List<Widget> _buildPages() => [
         const HabitListPage(),
         WishPage(key: _wishKey),
-        DataPage(key: _dataKey),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 96),
+          child: DataPage(key: _dataKey),
+        ),
         _buildProfileScreen(),
       ];
 
