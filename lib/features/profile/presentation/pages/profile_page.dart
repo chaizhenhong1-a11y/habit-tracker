@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../app/widgets/life_ui.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../diary/presentation/pages/diary_page.dart';
 import '../../../habits/data/repositories/hive_habit_repository.dart';
@@ -38,14 +39,12 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   static const _themeColors = <Color>[
-    Color(0xFF6C63FF),
-    Color(0xFF4CAF50),
-    Color(0xFFFF7043),
-    Color(0xFFE91E63),
-    Color(0xFF00BCD4),
-    Color(0xFF9C27B0),
-    Color(0xFFFFC107),
-    Color(0xFF795548),
+    Color(0xFF173F30),
+    Color(0xFF5F7A68),
+    Color(0xFFD8AD69),
+    Color(0xFFB66F5B),
+    Color(0xFF486B75),
+    Color(0xFF7C6A58),
   ];
 
   static const _presetAvatars = <String>[
@@ -62,13 +61,12 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _controller =
-        ProfileController(
-            repository: SharedPreferencesProfileRepository(),
-            habitRepository: HiveHabitRepository.fromHabitsBox(),
-          )
-          ..addListener(_onChanged)
-          ..load();
+    _controller = ProfileController(
+      repository: SharedPreferencesProfileRepository(),
+      habitRepository: HiveHabitRepository.fromHabitsBox(),
+    )
+      ..addListener(_onChanged)
+      ..load();
   }
 
   @override
@@ -85,30 +83,16 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _editUsername() async {
     final loc = AppLocalizations.of(context);
-    final textController = TextEditingController(
-      text: _controller.settings.username,
-    );
+    final controller = TextEditingController(text: _controller.settings.username);
     final value = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          loc.translate('editUsername') ?? '修改用户名',
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: Text(loc.translate('editUsername') ?? '修改用户名'),
         content: TextField(
-          controller: textController,
+          controller: controller,
           autofocus: true,
           decoration: InputDecoration(
             hintText: loc.translate('editUsernameHint') ?? '请输入用户名',
-            filled: true,
-            fillColor: Theme.of(
-              dialogContext,
-            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
           ),
         ),
         actions: [
@@ -117,16 +101,13 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Text(loc.translate('cancel') ?? '取消'),
           ),
           FilledButton(
-            onPressed: () {
-              Navigator.pop(dialogContext, textController.text.trim());
-            },
+            onPressed: () => Navigator.pop(dialogContext, controller.text.trim()),
             child: Text(loc.translate('save') ?? '保存'),
           ),
         ],
       ),
     );
-    textController.dispose();
-
+    controller.dispose();
     if (!mounted || value == null || value.isEmpty) return;
     await _controller.setUsername(value);
   }
@@ -134,27 +115,24 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _pickImage(ImageSource source) async {
     try {
       final image = await _picker.pickImage(source: source, imageQuality: 80);
-      if (image != null) {
-        await _controller.setAvatarLocalPath(image.path);
-      }
+      if (image != null) await _controller.setAvatarLocalPath(image.path);
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('选择图片失败: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('选择图片失败: $error')),
+      );
     }
   }
 
   Future<void> _promptNetworkAvatar() async {
     final loc = AppLocalizations.of(context);
-    final textController = TextEditingController();
+    final controller = TextEditingController();
     final value = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(loc.translate('imageUrlDialogTitle') ?? '图片 URL 链接'),
         content: TextField(
-          controller: textController,
+          controller: controller,
           autofocus: true,
           decoration: const InputDecoration(hintText: 'https://...'),
         ),
@@ -164,53 +142,45 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Text(loc.translate('cancel') ?? '取消'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, textController.text.trim()),
+            onPressed: () => Navigator.pop(dialogContext, controller.text.trim()),
             child: Text(loc.translate('confirm') ?? '确定'),
           ),
         ],
       ),
     );
-    textController.dispose();
-
+    controller.dispose();
     if (!mounted || value == null || value.isEmpty) return;
     await _controller.setAvatarAssetOrUrl(value);
   }
 
   void _changeAvatar() {
     final loc = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-        child: SafeArea(
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(2),
+              Center(
+                child: Container(
+                  width: 42,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 22),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
               Text(
                 loc.translate('changeAvatar') ?? '更换头像',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               if (!kIsWeb) ...[
                 _sheetAction(
                   icon: Icons.photo_library_outlined,
@@ -228,46 +198,35 @@ class _ProfilePageState extends State<ProfilePage> {
                     _pickImage(ImageSource.camera);
                   },
                 ),
-                const Divider(),
               ],
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 8,
-                  ),
-                  child: Text(
-                    loc.translate('presetAvatars') ?? '预设艺术头像',
-                    style: TextStyle(
-                      color: colorScheme.onSurface.withValues(alpha: 0.5),
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+              const SizedBox(height: 10),
+              Text(
+                loc.translate('presetAvatars') ?? '预设艺术头像',
+                style: Theme.of(context).textTheme.labelLarge,
               ),
+              const SizedBox(height: 12),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: _presetAvatars.map((assetPath) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 14),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.pop(sheetContext);
-                          _controller.setAvatarAssetOrUrl(assetPath);
-                        },
-                        child: CircleAvatar(
-                          radius: 28,
-                          backgroundImage: AssetImage(assetPath),
+                  children: [
+                    for (final assetPath in _presetAvatars)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.pop(sheetContext);
+                            _controller.setAvatarAssetOrUrl(assetPath);
+                          },
+                          child: CircleAvatar(
+                            radius: 28,
+                            backgroundImage: AssetImage(assetPath),
+                          ),
                         ),
                       ),
-                    );
-                  }).toList(),
+                  ],
                 ),
               ),
-              const Divider(height: 24),
+              const SizedBox(height: 12),
               _sheetAction(
                 icon: Icons.link_rounded,
                 title: loc.translate('useNetworkImage') ?? '使用网络图片链接',
@@ -298,15 +257,11 @@ class _ProfilePageState extends State<ProfilePage> {
     required VoidCallback onTap,
     bool destructive = false,
   }) {
-    final color = destructive
-        ? Colors.redAccent
-        : Theme.of(context).colorScheme.onSurface;
+    final color = destructive ? Colors.redAccent : Theme.of(context).colorScheme.onSurface;
     return ListTile(
+      contentPadding: EdgeInsets.zero,
       leading: Icon(icon, color: color),
-      title: Text(
-        title,
-        style: TextStyle(color: color, fontWeight: FontWeight.w500),
-      ),
+      title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
       onTap: onTap,
     );
   }
@@ -323,106 +278,81 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _exportData() async {
     final loc = AppLocalizations.of(context);
-    final payload = _controller.exportHabitsJson();
-    await Clipboard.setData(ClipboardData(text: payload));
+    await Clipboard.setData(ClipboardData(text: _controller.exportHabitsJson()));
     if (!mounted) return;
-
     HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(loc.translate('dataCopied') ?? '数据已完美复制到剪贴板！'),
-            ),
-          ],
-        ),
-      ),
+      SnackBar(content: Text(loc.translate('dataCopied') ?? '数据已复制到剪贴板')),
     );
   }
 
   ImageProvider<Object>? _avatarProvider() {
     final settings = _controller.settings;
-
     if (!kIsWeb && settings.avatarLocalPath.isNotEmpty) {
       final file = File(settings.avatarLocalPath);
       if (file.existsSync()) return FileImage(file);
     }
-
     if (settings.avatarUrl.isEmpty) return null;
-    if (settings.avatarUrl.startsWith('http')) {
-      return NetworkImage(settings.avatarUrl);
-    }
+    if (settings.avatarUrl.startsWith('http')) return NetworkImage(settings.avatarUrl);
     return AssetImage(settings.avatarUrl);
   }
 
-  Widget _buildAvatar() {
-    final imageProvider = _avatarProvider();
+  Widget _avatar() {
+    final provider = _avatarProvider();
     final username = _controller.settings.username;
-
-    return Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: widget.seedColor.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 92,
+          height: 92,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: const Color(0xFFF3E4BF),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: .12),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            backgroundImage: imageProvider,
-            child: imageProvider == null
+          child: CircleAvatar(
+            backgroundColor: const Color(0xFF315D43),
+            backgroundImage: provider,
+            child: provider == null
                 ? Text(
                     username.isNotEmpty ? username[0].toUpperCase() : '?',
-                    style: TextStyle(
-                      fontSize: 38,
-                      fontWeight: FontWeight.w800,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    style: const TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: 34,
+                      color: Colors.white,
                     ),
                   )
                 : null,
           ),
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                  width: 1.5,
-                ),
-              ),
-              child: Icon(
-                Icons.camera_alt_rounded,
-                size: 16,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+        ),
+        Positioned(
+          right: -2,
+          bottom: 2,
+          child: Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFCF6),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF315D43).withValues(alpha: .15)),
             ),
+            child: const Icon(Icons.camera_alt_rounded, size: 15, color: Color(0xFF173F30)),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final loc = AppLocalizations.of(context);
     final settings = _controller.settings;
     final displayName = settings.username == '用户' || settings.username.isEmpty
@@ -430,336 +360,230 @@ class _ProfilePageState extends State<ProfilePage> {
         : settings.username;
 
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainerLowest,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 240,
-            pinned: true,
-            stretch: true,
-            centerTitle: true,
-            backgroundColor: colorScheme.surface,
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.pin,
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      widget.seedColor.withValues(alpha: 0.25),
-                      widget.seedColor.withValues(alpha: 0.02),
-                    ],
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 50),
-                    GestureDetector(
-                      onTap: _changeAvatar,
-                      child: _buildAvatar(),
-                    ),
-                    const SizedBox(height: 14),
-                    GestureDetector(
-                      onTap: _editUsername,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              displayName,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Icon(
-                            Icons.edit_note_rounded,
-                            size: 20,
-                            color: widget.seedColor,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      loc.translate('tapToChangeAvatar') ?? '点击更换头像',
-                      style: TextStyle(
-                        color: colorScheme.onSurface.withValues(alpha: 0.6),
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        bottom: false,
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 26, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: LifePageHeader(
+                  eyebrow: 'YOU',
+                  title: 'Your life,\nmade intentional.',
+                  subtitle: 'Shape the space around your habits and keep what matters close.',
                 ),
               ),
             ),
-          ),
-          SliverList(
-            delegate: SliverChildListDelegate([
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _sectionTitle(loc.translate('personalization') ?? '个性视觉'),
-                    _group([
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.palette_outlined,
-                                  size: 20,
-                                  color: colorScheme.primary,
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF173F2D), Color(0xFF315D43)],
+                    ),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    children: [
+                      GestureDetector(onTap: _changeAvatar, child: _avatar()),
+                      const SizedBox(width: 18),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: _editUsername,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                displayName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontFamily: 'Georgia',
+                                  fontSize: 24,
+                                  color: Colors.white,
                                 ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  loc.translate('applyThemeColor') ?? '应用色彩主题',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15,
-                                  ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                loc.translate('tapToChangeAvatar') ?? '点击头像更换 · 点击名字编辑',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white.withValues(alpha: .62),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Wrap(
-                              spacing: 14,
-                              runSpacing: 14,
-                              children: _themeColors.map((color) {
-                                final selected =
-                                    widget.seedColor.toARGB32() ==
-                                    color.toARGB32();
-                                return GestureDetector(
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: _editUsername,
+                        icon: const Icon(Icons.edit_outlined, color: Color(0xFFE2C58A)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 30, 20, 130),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  LifeSectionTitle(
+                    title: loc.translate('personalization') ?? 'Personalization',
+                    caption: 'Make this space feel like yours',
+                  ),
+                  const SizedBox(height: 12),
+                  _group([
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            loc.translate('applyThemeColor') ?? 'Accent color',
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 14),
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: [
+                              for (final color in _themeColors)
+                                GestureDetector(
                                   onTap: () => widget.onSeedColorChanged(color),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 250),
-                                    width: 38,
-                                    height: 38,
+                                  child: Container(
+                                    width: 36,
+                                    height: 36,
                                     decoration: BoxDecoration(
                                       color: color,
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: selected
-                                            ? colorScheme.surface
+                                        color: widget.seedColor.toARGB32() == color.toARGB32()
+                                            ? Theme.of(context).colorScheme.onSurface
                                             : Colors.transparent,
-                                        width: 3,
+                                        width: 2,
                                       ),
-                                      boxShadow: selected
-                                          ? [
-                                              BoxShadow(
-                                                color: color.withValues(
-                                                  alpha: 0.4,
-                                                ),
-                                                blurRadius: 10,
-                                                spreadRadius: 2,
-                                              ),
-                                            ]
-                                          : null,
                                     ),
-                                    child: selected
-                                        ? const Icon(
-                                            Icons.check,
-                                            color: Colors.white,
-                                            size: 18,
-                                          )
+                                    child: widget.seedColor.toARGB32() == color.toARGB32()
+                                        ? const Icon(Icons.check_rounded, size: 17, color: Colors.white)
                                         : null,
                                   ),
-                                );
-                              }).toList(),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Divider(height: 1, indent: 16),
-                      _rowAction(
-                        icon: Icons.light_mode_outlined,
-                        title: loc.translate('lightMode') ?? '浅色模式',
-                        trailing: widget.themeMode == ThemeMode.light
-                            ? _checkedIcon()
-                            : null,
-                        onTap: () => widget.onThemeModeChanged(ThemeMode.light),
-                      ),
-                      _rowAction(
-                        icon: Icons.dark_mode_outlined,
-                        title: loc.translate('darkMode') ?? '深色模式',
-                        trailing: widget.themeMode == ThemeMode.dark
-                            ? _checkedIcon()
-                            : null,
-                        onTap: () => widget.onThemeModeChanged(ThemeMode.dark),
-                      ),
-                      _rowAction(
-                        icon: Icons.settings_suggest_outlined,
-                        title: loc.translate('systemMode') ?? '跟随系统',
-                        trailing: widget.themeMode == ThemeMode.system
-                            ? _checkedIcon()
-                            : null,
-                        onTap: () =>
-                            widget.onThemeModeChanged(ThemeMode.system),
-                      ),
-                    ]),
-                    _sectionTitle(loc.translate('language') ?? '语言 / Language'),
-                    _group([
-                      _languageOption(
-                        loc.translate('chinese') ?? '中文',
-                        widget.locale.languageCode == 'zh',
-                        () => widget.onLocaleChanged(const Locale('zh')),
-                      ),
-                      _languageOption(
-                        loc.translate('english') ?? 'English',
-                        widget.locale.languageCode == 'en',
-                        () => widget.onLocaleChanged(const Locale('en')),
-                      ),
-                    ]),
-                    _sectionTitle(loc.translate('coreEfficiency') ?? '核心效率'),
-                    _group([
-                      SwitchListTile(
-                        secondary: Icon(
-                          Icons.notifications_active_outlined,
-                          color: colorScheme.primary,
-                        ),
-                        title: Text(loc.translate('dailyReminder') ?? '每日打卡提醒'),
-                        value: settings.reminderEnabled,
-                        activeThumbColor: widget.seedColor,
-                        onChanged: _controller.setReminderEnabled,
-                      ),
-                      if (settings.reminderEnabled) ...[
-                        const Divider(height: 1, indent: 56),
-                        _rowAction(
-                          icon: Icons.access_time_rounded,
-                          title: loc.translate('reminderTime') ?? '提醒时间',
-                          trailing: Text(
-                            TimeOfDay(
-                              hour: settings.reminderHour,
-                              minute: settings.reminderMinute,
-                            ).format(context),
-                            style: TextStyle(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          onTap: _pickReminderTime,
-                        ),
-                      ],
-                    ]),
-                    _sectionTitle(loc.translate('dataCenter') ?? '数据中心'),
-                    _group([
-                      _rowAction(
-                        icon: Icons.event_note_rounded,
-                        title: loc.translate('plan') ?? '我的计划',
-                        subtitle:
-                            loc.translate('planSubtitle') ?? '管理日常待办和习惯阶段目标',
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => const PlanPage(),
-                          ),
-                        ),
-                      ),
-                      const Divider(height: 1, indent: 56),
-                      _rowAction(
-                        icon: Icons.book_outlined,
-                        title: loc.translate('diary') ?? '我的日记',
-                        subtitle:
-                            loc.translate('diarySubtitle') ?? '记录生活碎念与复盘随笔',
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => const DiaryPage(),
-                          ),
-                        ),
-                      ),
-                      const Divider(height: 1, indent: 56),
-                      _rowAction(
-                        icon: Icons.cloud_upload_outlined,
-                        title: loc.translate('exportData') ?? '导出所有习惯数据',
-                        subtitle:
-                            loc.translate('exportDataSubtitle') ??
-                            '单击以标准 JSON 格式进行数据备份',
-                        onTap: _exportData,
-                      ),
-                    ]),
-                    const SizedBox(height: 24),
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 56),
-                        backgroundColor: Colors.red.withValues(alpha: 0.08),
-                        foregroundColor: Colors.redAccent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      onPressed: widget.onLogout,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.logout_rounded, size: 18),
-                          const SizedBox(width: 8),
-                          Text(
-                            loc.translate('logout') ?? '退出登录账户',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
+                                ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                    const Divider(height: 1),
+                    _rowAction(
+                      icon: Icons.light_mode_outlined,
+                      title: loc.translate('lightMode') ?? '浅色模式',
+                      trailing: widget.themeMode == ThemeMode.light ? _checkedIcon() : null,
+                      onTap: () => widget.onThemeModeChanged(ThemeMode.light),
+                    ),
+                    _rowAction(
+                      icon: Icons.dark_mode_outlined,
+                      title: loc.translate('darkMode') ?? '深色模式',
+                      trailing: widget.themeMode == ThemeMode.dark ? _checkedIcon() : null,
+                      onTap: () => widget.onThemeModeChanged(ThemeMode.dark),
+                    ),
+                    _rowAction(
+                      icon: Icons.settings_suggest_outlined,
+                      title: loc.translate('systemMode') ?? '跟随系统',
+                      trailing: widget.themeMode == ThemeMode.system ? _checkedIcon() : null,
+                      onTap: () => widget.onThemeModeChanged(ThemeMode.system),
+                    ),
+                  ]),
+                  const SizedBox(height: 26),
+                  LifeSectionTitle(
+                    title: loc.translate('language') ?? 'Language',
+                    caption: 'Choose how Habit speaks to you',
+                  ),
+                  const SizedBox(height: 12),
+                  _group([
+                    _languageOption('中文', widget.locale.languageCode == 'zh', () => widget.onLocaleChanged(const Locale('zh'))),
+                    _languageOption('English', widget.locale.languageCode == 'en', () => widget.onLocaleChanged(const Locale('en'))),
+                  ]),
+                  const SizedBox(height: 26),
+                  LifeSectionTitle(
+                    title: loc.translate('coreEfficiency') ?? 'Daily rhythm',
+                    caption: 'Gentle structure for the life you want',
+                  ),
+                  const SizedBox(height: 12),
+                  _group([
+                    SwitchListTile(
+                      secondary: const Icon(Icons.notifications_active_outlined, color: Color(0xFF315D43)),
+                      title: Text(loc.translate('dailyReminder') ?? '每日打卡提醒'),
+                      value: settings.reminderEnabled,
+                      onChanged: _controller.setReminderEnabled,
+                    ),
+                    if (settings.reminderEnabled)
+                      _rowAction(
+                        icon: Icons.access_time_rounded,
+                        title: loc.translate('reminderTime') ?? '提醒时间',
+                        trailing: Text(
+                          TimeOfDay(hour: settings.reminderHour, minute: settings.reminderMinute).format(context),
+                          style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF315D43)),
+                        ),
+                        onTap: _pickReminderTime,
+                      ),
+                  ]),
+                  const SizedBox(height: 26),
+                  LifeSectionTitle(
+                    title: loc.translate('dataCenter') ?? 'Your space',
+                    caption: 'Plans, reflections and your own data',
+                  ),
+                  const SizedBox(height: 12),
+                  _group([
+                    _rowAction(
+                      icon: Icons.event_note_rounded,
+                      title: loc.translate('plan') ?? '我的计划',
+                      subtitle: loc.translate('planSubtitle') ?? '管理日常待办和习惯阶段目标',
+                      onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const PlanPage())),
+                    ),
+                    _rowAction(
+                      icon: Icons.auto_stories_outlined,
+                      title: loc.translate('diary') ?? '我的日记',
+                      subtitle: loc.translate('diarySubtitle') ?? '记录生活碎念与复盘随笔',
+                      onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const DiaryPage())),
+                    ),
+                    _rowAction(
+                      icon: Icons.ios_share_rounded,
+                      title: loc.translate('exportData') ?? '导出所有习惯数据',
+                      subtitle: loc.translate('exportDataSubtitle') ?? '以 JSON 格式备份你的数据',
+                      onTap: _exportData,
+                    ),
+                  ]),
+                  const SizedBox(height: 26),
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 54),
+                      foregroundColor: const Color(0xFF9E4D45),
+                      backgroundColor: const Color(0xFF9E4D45).withValues(alpha: .07),
+                    ),
+                    onPressed: widget.onLogout,
+                    icon: const Icon(Icons.logout_rounded),
+                    label: Text(loc.translate('logout') ?? '退出登录账户'),
+                  ),
+                ]),
               ),
-            ]),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 24, 0, 10),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
-          letterSpacing: 1.2,
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _group(List<Widget> children) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        clipBehavior: Clip.antiAlias,
-        child: Column(children: children),
-      ),
+    return LifeSurface(
+      padding: EdgeInsets.zero,
+      child: Column(children: children),
     );
   }
 
@@ -770,36 +594,21 @@ class _ProfilePageState extends State<ProfilePage> {
     Widget? trailing,
     required VoidCallback onTap,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
-        padding: const EdgeInsets.all(8),
+        width: 38,
+        height: 38,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: colorScheme.primary.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(10),
+          color: const Color(0xFF315D43).withValues(alpha: .08),
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: colorScheme.primary, size: 20),
+        child: Icon(icon, color: const Color(0xFF315D43), size: 19),
       ),
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
-      ),
-      subtitle: subtitle == null
-          ? null
-          : Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-              ),
-            ),
-      trailing:
-          trailing ??
-          Icon(
-            Icons.chevron_right_rounded,
-            color: colorScheme.onSurface.withValues(alpha: 0.3),
-          ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+      subtitle: subtitle == null ? null : Text(subtitle, style: const TextStyle(fontSize: 12)),
+      trailing: trailing ?? const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () {
         HapticFeedback.lightImpact();
         onTap();
@@ -807,30 +616,17 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _checkedIcon() {
-    return Container(
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        color: widget.seedColor.withValues(alpha: 0.15),
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
+  Widget _checkedIcon() => const Icon(
         Icons.check_circle_rounded,
-        color: widget.seedColor,
+        color: Color(0xFF315D43),
         size: 20,
-      ),
-    );
-  }
+      );
 
   Widget _languageOption(String title, bool selected, VoidCallback onTap) {
     return ListTile(
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-      trailing: selected
-          ? Icon(
-              Icons.check_circle_rounded,
-              color: Theme.of(context).colorScheme.primary,
-            )
-          : null,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      trailing: selected ? _checkedIcon() : null,
       onTap: onTap,
     );
   }
