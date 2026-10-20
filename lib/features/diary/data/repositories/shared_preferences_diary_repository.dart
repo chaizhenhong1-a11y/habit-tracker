@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/storage/data_changes.dart';
 
 import '../../domain/entities/diary_entry.dart';
 import '../../domain/repositories/diary_repository.dart';
@@ -29,5 +30,6 @@ class SharedPreferencesDiaryRepository implements DiaryRepository {
         .map((entry) => jsonEncode(entry.toJson()))
         .toList(growable: false);
     await preferences.setStringList(_storageKey, encodedEntries);
+    DataChanges.notify();
   }
 }

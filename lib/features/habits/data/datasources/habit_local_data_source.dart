@@ -1,4 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import '../../../../core/storage/points_ledger.dart';
 
 import '../../domain/entities/habit.dart';
 
@@ -27,6 +28,7 @@ class HabitLocalDataSource {
 
   void put(Habit habit) {
     _box.put(habit.id, habit.toMap());
+    PointsLedger.opened().record([habit]);
   }
 
   void delete(String id) {
@@ -34,6 +36,7 @@ class HabitLocalDataSource {
   }
 
   void replaceAll(List<Habit> habits) {
+    PointsLedger.opened().record(habits);
     _box.clear();
 
     for (final habit in habits) {

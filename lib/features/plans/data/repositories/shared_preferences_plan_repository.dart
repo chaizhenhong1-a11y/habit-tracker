@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/storage/data_changes.dart';
 
 import '../../domain/entities/plan_item.dart';
 import '../../domain/repositories/plan_repository.dart';
@@ -34,5 +35,6 @@ class SharedPreferencesPlanRepository implements PlanRepository {
         .map((plan) => jsonEncode(plan.toJson()))
         .toList(growable: false);
     await preferences.setStringList(_storageKey, encodedPlans);
+    DataChanges.notify();
   }
 }

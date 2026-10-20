@@ -7,6 +7,8 @@ environment:
   sdk: ^3.12.1
 
 dependencies:
+  crypto: ^3.0.7
+  path_provider: ^2.1.5
   flutter:
     sdk: flutter
   flutter_localizations:   # 新增
@@ -21,15 +23,19 @@ dependencies:
   fl_chart: ^0.68.0
   cupertino_icons: ^1.0.8
   firebase_auth: ^6.5.6
+  firebase_core: ^4.15.0
+  cloud_firestore: ^6.10.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  fake_cloud_firestore: ^4.3.0
 
 flutter:
   uses-material-design: true
   assets:
+    - assets/branding/app-icon.png
     - assets/images/如花.png
     - assets/images/坤哥.png
     - assets/images/小女孩.png

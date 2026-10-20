@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/storage/data_changes.dart';
 
 import '../../domain/entities/redeem_record.dart';
 import '../../domain/entities/reward.dart';
@@ -56,5 +57,6 @@ class SharedPreferencesWishRepository implements WishRepository {
             .toList(),
       ),
     ]);
+    DataChanges.notify();
   }
 }

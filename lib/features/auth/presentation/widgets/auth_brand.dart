@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 class HabitBrand extends StatelessWidget {
   const HabitBrand({super.key, this.compact = false});
   final bool compact;
@@ -13,10 +15,10 @@ class HabitBrand extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _HabitMark(size: compact ? 48 : 62),
+        _HabitMark(size: compact ? 80 : 96),
         SizedBox(height: compact ? 7 : 10),
         Text(
-          'H A B I T',
+          AppLocalizations.of(context).text('brandName'),
           style: TextStyle(
             color: ink,
             fontSize: compact ? 17 : 20,
@@ -26,7 +28,7 @@ class HabitBrand extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'A  B E T T E R  Y O U  ·  E V E R Y  D A Y',
+          AppLocalizations.of(context).text('brandTagline'),
           style: TextStyle(
             color: ink.withValues(alpha: .58),
             fontSize: 7.5,
@@ -45,70 +47,13 @@ class _HabitMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        width: size,
-        height: size,
-        child: CustomPaint(painter: _MarkPainter()),
-      );
-}
-
-class _MarkPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size s) {
-    final stem = Paint()
-      ..color = const Color(0xFF244E39)
-      ..strokeWidth = s.width * .052
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      Offset(s.width * .5, s.height * .86),
-      Offset(s.width * .5, s.height * .37),
-      stem,
-    );
-
-    final left = Path()
-      ..moveTo(s.width * .47, s.height * .72)
-      ..cubicTo(s.width * .12, s.height * .61, s.width * .13, s.height * .23,
-          s.width * .18, s.height * .17)
-      ..cubicTo(s.width * .43, s.height * .24, s.width * .53, s.height * .49,
-          s.width * .47, s.height * .72)
-      ..close();
-    canvas.drawPath(
-      left,
-      Paint()
-        ..shader = const LinearGradient(
-          colors: [Color(0xFF9BAA78), Color(0xFF42694C)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ).createShader(Offset.zero & s),
-    );
-
-    final right = Path()
-      ..moveTo(s.width * .53, s.height * .72)
-      ..cubicTo(s.width * .88, s.height * .61, s.width * .87, s.height * .28,
-          s.width * .82, s.height * .22)
-      ..cubicTo(s.width * .58, s.height * .27, s.width * .48, s.height * .51,
-          s.width * .53, s.height * .72)
-      ..close();
-    canvas.drawPath(
-      right,
-      Paint()
-        ..shader = const LinearGradient(
-          colors: [Color(0xFF78915F), Color(0xFF214B38)],
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-        ).createShader(Offset.zero & s),
-    );
-    canvas.drawCircle(
-      Offset(s.width * .68, s.height * .13),
-      s.width * .105,
-      Paint()
-        ..shader = const RadialGradient(
-          colors: [Color(0xFFF2CF91), Color(0xFFD8A85D)],
-        ).createShader(Offset.zero & s),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+    width: size,
+    height: size,
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(size * .24),
+      child: Image.asset('assets/branding/app-icon.png', fit: BoxFit.cover),
+    ),
+  );
 }
 
 class AuthBackdrop extends StatelessWidget {
@@ -185,24 +130,25 @@ class _SunGlow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: 290,
-        height: 290,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              const Color(0xFFFFD7A1).withValues(alpha: dark ? 0.08 : 0.34),
-              Colors.transparent,
-            ],
-          ),
-        ),
-      );
+    width: 290,
+    height: 290,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: RadialGradient(
+        colors: [
+          const Color(0xFFFFD7A1).withValues(alpha: dark ? 0.08 : 0.34),
+          Colors.transparent,
+        ],
+      ),
+    ),
+  );
 }
 
 class _Landscape extends StatelessWidget {
   const _Landscape();
   @override
-  Widget build(BuildContext context) => CustomPaint(painter: _LandscapePainter());
+  Widget build(BuildContext context) =>
+      CustomPaint(painter: _LandscapePainter());
 }
 
 class _LandscapePainter extends CustomPainter {
@@ -219,16 +165,32 @@ class _LandscapePainter extends CustomPainter {
       ..lineTo(s.width, s.height)
       ..lineTo(0, s.height)
       ..close();
-    c.drawPath(far, Paint()..color = const Color(0xFF87938A).withValues(alpha: .20));
+    c.drawPath(
+      far,
+      Paint()..color = const Color(0xFF87938A).withValues(alpha: .20),
+    );
 
     final near = Path()
       ..moveTo(0, s.height * .75)
-      ..quadraticBezierTo(s.width * .22, s.height * .58, s.width * .43, s.height * .73)
-      ..quadraticBezierTo(s.width * .70, s.height * .90, s.width, s.height * .62)
+      ..quadraticBezierTo(
+        s.width * .22,
+        s.height * .58,
+        s.width * .43,
+        s.height * .73,
+      )
+      ..quadraticBezierTo(
+        s.width * .70,
+        s.height * .90,
+        s.width,
+        s.height * .62,
+      )
       ..lineTo(s.width, s.height)
       ..lineTo(0, s.height)
       ..close();
-    c.drawPath(near, Paint()..color = const Color(0xFF3F6551).withValues(alpha: .13));
+    c.drawPath(
+      near,
+      Paint()..color = const Color(0xFF3F6551).withValues(alpha: .13),
+    );
   }
 
   @override
@@ -236,23 +198,27 @@ class _LandscapePainter extends CustomPainter {
 }
 
 class _LeafCluster extends StatelessWidget {
-  const _LeafCluster({required this.size, required this.opacity, required this.angle});
+  const _LeafCluster({
+    required this.size,
+    required this.opacity,
+    required this.angle,
+  });
   final double size;
   final double opacity;
   final double angle;
 
   @override
   Widget build(BuildContext context) => Transform.rotate(
-        angle: angle,
-        child: Opacity(
-          opacity: opacity,
-          child: SizedBox(
-            width: size,
-            height: size,
-            child: CustomPaint(painter: _LeavesPainter()),
-          ),
-        ),
-      );
+    angle: angle,
+    child: Opacity(
+      opacity: opacity,
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: CustomPaint(painter: _LeavesPainter()),
+      ),
+    ),
+  );
 }
 
 class _LeavesPainter extends CustomPainter {
@@ -299,6 +265,7 @@ class PremiumAuthField extends StatelessWidget {
     this.autofillHints,
     this.textInputAction,
     this.onFieldSubmitted,
+    this.keyboardType,
   });
 
   final TextEditingController controller;
@@ -311,6 +278,7 @@ class PremiumAuthField extends StatelessWidget {
   final Iterable<String>? autofillHints;
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onFieldSubmitted;
+  final TextInputType? keyboardType;
 
   @override
   Widget build(BuildContext context) {
@@ -321,6 +289,7 @@ class PremiumAuthField extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: TextFormField(
           controller: controller,
+          keyboardType: keyboardType,
           focusNode: focusNode,
           obscureText: obscureText,
           autofillHints: autofillHints,
@@ -339,10 +308,15 @@ class PremiumAuthField extends StatelessWidget {
             fillColor: dark
                 ? Colors.white.withValues(alpha: .08)
                 : Colors.white.withValues(alpha: .48),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 19),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 19,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(22),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: .58)),
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: .58),
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(22),
@@ -368,7 +342,8 @@ class PremiumAuthField extends StatelessWidget {
   }
 }
 
-ButtonStyle premiumAuthButtonStyle(BuildContext context) => FilledButton.styleFrom(
+ButtonStyle premiumAuthButtonStyle(BuildContext context) =>
+    FilledButton.styleFrom(
       backgroundColor: const Color(0xFF194B36),
       foregroundColor: Colors.white,
       disabledBackgroundColor: const Color(0xFF194B36).withValues(alpha: .45),

@@ -1,4 +1,5 @@
-import 'dart:io';
+import '../../../../app/widgets/stored_photo.dart';
+import '../../../../core/storage/photo_store.dart';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -137,7 +138,9 @@ class _DiaryPageState extends State<DiaryPage> {
                               imageQuality: 80,
                             );
                             if (picked != null && context.mounted) {
-                              setDialogState(() => imagePath = picked.path);
+                              final saved = await persistPhoto(picked.path);
+                              if (!context.mounted) return;
+                              setDialogState(() => imagePath = saved);
                             }
                           },
                           icon: const Icon(Icons.photo_library),
@@ -150,7 +153,9 @@ class _DiaryPageState extends State<DiaryPage> {
                               imageQuality: 80,
                             );
                             if (picked != null && context.mounted) {
-                              setDialogState(() => imagePath = picked.path);
+                              final saved = await persistPhoto(picked.path);
+                              if (!context.mounted) return;
+                              setDialogState(() => imagePath = saved);
                             }
                           },
                           icon: const Icon(Icons.camera_alt),
@@ -160,11 +165,7 @@ class _DiaryPageState extends State<DiaryPage> {
                     ),
                     if (imagePath != null) ...[
                       const SizedBox(height: 8),
-                      Image.file(
-                        File(imagePath!),
-                        height: 120,
-                        fit: BoxFit.cover,
-                      ),
+                      StoredPhoto(imagePath!, height: 120, fit: BoxFit.cover),
                       TextButton(
                         onPressed: () {
                           setDialogState(() => imagePath = null);
@@ -372,8 +373,8 @@ class _DiaryPageState extends State<DiaryPage> {
                               when path.isNotEmpty)
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                File(path),
+                              child: StoredPhoto(
+                                path,
                                 width: 50,
                                 height: 50,
                                 fit: BoxFit.cover,
@@ -452,8 +453,8 @@ class DiaryDetailPage extends StatelessWidget {
             if (entry.imagePath case final path? when path.isNotEmpty) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  File(path),
+                child: StoredPhoto(
+                  path,
                   width: double.infinity,
                   fit: BoxFit.cover,
                 ),

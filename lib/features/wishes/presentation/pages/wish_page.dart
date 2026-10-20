@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../app/widgets/life_ui.dart';
@@ -25,8 +26,26 @@ class WishPageState extends State<WishPage> {
   ];
 
   static const _emojis = <String>[
-    '🎁', '🎮', '🎧', '📱', '🎬', '☕', '🍰', '🍕', '🍲', '✈️',
-    '📚', '🏃', '🎸', '🎨', '🛍️', '🍩', '🍿', '🎡', '💆', '👑',
+    '🎁',
+    '🎮',
+    '🎧',
+    '📱',
+    '🎬',
+    '☕',
+    '🍰',
+    '🍕',
+    '🍲',
+    '✈️',
+    '📚',
+    '🏃',
+    '🎸',
+    '🎨',
+    '🛍️',
+    '🍩',
+    '🍿',
+    '🎡',
+    '💆',
+    '👑',
   ];
 
   late final WishController _controller;
@@ -34,12 +53,13 @@ class WishPageState extends State<WishPage> {
   @override
   void initState() {
     super.initState();
-    _controller = WishController(
-      repository: SharedPreferencesWishRepository(),
-      habitRepository: HiveHabitRepository.fromHabitsBox(),
-    )
-      ..addListener(_changed)
-      ..load();
+    _controller =
+        WishController(
+            repository: SharedPreferencesWishRepository(),
+            habitRepository: HiveHabitRepository.fromHabitsBox(),
+          )
+          ..addListener(_changed)
+          ..load();
   }
 
   @override
@@ -168,29 +188,36 @@ class WishPageState extends State<WishPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Give your consistency something meaningful to move toward.',
+                      AppLocalizations.of(context).text('wishIntro'),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 20),
                     SizedBox(
                       height: 52,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _emojis.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (context, index) {
-                          final emoji = _emojis[index];
-                          return ChoiceChip(
-                            label: Text(
-                              emoji,
-                              style: const TextStyle(fontSize: 19),
-                            ),
-                            selected: selectedEmoji == emoji,
-                            onSelected: (_) => setSheetState(
-                              () => selectedEmoji = emoji,
-                            ),
-                          );
-                        },
+                      child: ScrollConfiguration(
+                        behavior: ScrollConfiguration.of(context).copyWith(
+                          dragDevices: {
+                            ...ScrollConfiguration.of(context).dragDevices,
+                            PointerDeviceKind.mouse,
+                          },
+                        ),
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _emojis.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          itemBuilder: (context, index) {
+                            final emoji = _emojis[index];
+                            return ChoiceChip(
+                              label: Text(
+                                emoji,
+                                style: const TextStyle(fontSize: 19),
+                              ),
+                              selected: selectedEmoji == emoji,
+                              onSelected: (_) =>
+                                  setSheetState(() => selectedEmoji = emoji),
+                            );
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -208,10 +235,9 @@ class WishPageState extends State<WishPage> {
                       keyboardType: TextInputType.number,
                       textInputAction: TextInputAction.done,
                       decoration: InputDecoration(
-                        labelText: l.translate('targetPointsLabel') ??
-                            'Points needed',
-                        prefixIcon:
-                            const Icon(Icons.auto_awesome_rounded),
+                        labelText:
+                            l.translate('targetPointsLabel') ?? 'Points needed',
+                        prefixIcon: const Icon(Icons.auto_awesome_rounded),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -222,11 +248,7 @@ class WishPageState extends State<WishPage> {
                         if (name.isEmpty || cost == null || cost <= 0) return;
                         Navigator.pop(
                           sheetContext,
-                          Reward(
-                            name: name,
-                            emoji: selectedEmoji,
-                            cost: cost,
-                          ),
+                          Reward(name: name, emoji: selectedEmoji, cost: cost),
                         );
                       },
                       child: Text(
@@ -290,10 +312,9 @@ class WishPageState extends State<WishPage> {
                 padding: const EdgeInsets.fromLTRB(20, 26, 20, 0),
                 sliver: SliverToBoxAdapter(
                   child: LifePageHeader(
-                    eyebrow: 'JOURNEY',
-                    title: 'Reward the life\nyou are building.',
-                    subtitle:
-                        'Turn daily consistency into moments worth looking forward to.',
+                    eyebrow: AppLocalizations.of(context).text('journeyLabel'),
+                    title: AppLocalizations.of(context).text('journeyTitle'),
+                    subtitle: AppLocalizations.of(context).text('journeyIntro'),
                     trailing: IconButton.filledTonal(
                       onPressed: () => Navigator.push(
                         context,
@@ -322,35 +343,28 @@ class WishPageState extends State<WishPage> {
                 padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
                 sliver: SliverToBoxAdapter(
                   child: LifeSectionTitle(
-                    title:
-                        l.translate('presetRewards') ?? 'Curated rewards',
-                    caption:
-                        'Small celebrations for meaningful consistency',
+                    title: l.translate('presetRewards') ?? 'Curated rewards',
+                    caption: AppLocalizations.of(context).text('rewardCaption'),
                   ),
                 ),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
                 sliver: SliverGrid(
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
                     childAspectRatio: .9,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final reward = presets[index];
-                      return _RewardCard(
-                        reward: reward,
-                        canAfford:
-                            _controller.availablePoints >= reward.cost,
-                        onTap: () => _redeem(reward),
-                      );
-                    },
-                    childCount: presets.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final reward = presets[index];
+                    return _RewardCard(
+                      reward: reward,
+                      canAfford: _controller.availablePoints >= reward.cost,
+                      onTap: () => _redeem(reward),
+                    );
+                  }, childCount: presets.length),
                 ),
               ),
               SliverPadding(
@@ -358,11 +372,13 @@ class WishPageState extends State<WishPage> {
                 sliver: SliverToBoxAdapter(
                   child: LifeSectionTitle(
                     title: l.translate('myWishlist') ?? 'My milestones',
-                    caption: 'Personal rewards that make the journey yours',
+                    caption: AppLocalizations.of(
+                      context,
+                    ).text('wishlistCaption'),
                     action: TextButton.icon(
                       onPressed: _addWish,
                       icon: const Icon(Icons.add_rounded),
-                      label: const Text('Add'),
+                      label: Text(AppLocalizations.of(context).text('add')),
                     ),
                   ),
                 ),
@@ -399,24 +415,20 @@ class WishPageState extends State<WishPage> {
                   sliver: SliverGrid(
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: .9,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final reward = _controller.customRewards[index];
-                        return _RewardCard(
-                          reward: reward,
-                          canAfford:
-                              _controller.availablePoints >= reward.cost,
-                          onTap: () => _redeem(reward),
-                          onLongPress: () => _delete(reward),
-                        );
-                      },
-                      childCount: _controller.customRewards.length,
-                    ),
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: .9,
+                        ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final reward = _controller.customRewards[index];
+                      return _RewardCard(
+                        reward: reward,
+                        canAfford: _controller.availablePoints >= reward.cost,
+                        onTap: () => _redeem(reward),
+                        onLongPress: () => _delete(reward),
+                      );
+                    }, childCount: _controller.customRewards.length),
                   ),
                 ),
             ],
@@ -451,8 +463,7 @@ class _BalanceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color:
-                const Color(0xFF173E2D).withValues(alpha: .18),
+            color: const Color(0xFF173E2D).withValues(alpha: .18),
             blurRadius: 30,
             offset: const Offset(0, 14),
           ),
@@ -462,7 +473,7 @@ class _BalanceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'AVAILABLE GROWTH POINTS',
+            AppLocalizations.of(context).text('growthPoints'),
             style: TextStyle(
               color: Colors.white.withValues(alpha: .62),
               fontSize: 10,
@@ -496,9 +507,19 @@ class _BalanceCard extends StatelessWidget {
           const SizedBox(height: 22),
           Row(
             children: [
-              Expanded(child: _Stat(label: 'Earned', value: '$total')),
+              Expanded(
+                child: _Stat(
+                  label: AppLocalizations.of(context).text('earnedLabel'),
+                  value: '$total',
+                ),
+              ),
               Container(width: 1, height: 30, color: Colors.white24),
-              Expanded(child: _Stat(label: 'Invested', value: '$spent')),
+              Expanded(
+                child: _Stat(
+                  label: AppLocalizations.of(context).text('spentLabel'),
+                  value: '$spent',
+                ),
+              ),
             ],
           ),
         ],
@@ -562,9 +583,7 @@ class _RewardCard extends StatelessWidget {
         child: Ink(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: dark
-                ? const Color(0xFF171F19)
-                : const Color(0xFFFFFCF6),
+            color: dark ? const Color(0xFF171F19) : const Color(0xFFFFFCF6),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: const Color(0xFF315D43).withValues(alpha: .1),
@@ -576,11 +595,12 @@ class _RewardCard extends StatelessWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
-                    color:
-                        const Color(0xFFE2C58A).withValues(alpha: .18),
+                    color: const Color(0xFFE2C58A).withValues(alpha: .18),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -600,12 +620,16 @@ class _RewardCard extends StatelessWidget {
                 reward.name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style:
-                    const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
-                canAfford ? 'Ready when you are' : 'Keep building',
+                canAfford
+                    ? AppLocalizations.of(context).text('rewardReady')
+                    : AppLocalizations.of(context).text('keepBuilding'),
                 style: TextStyle(
                   fontSize: 11,
                   color: canAfford
@@ -636,17 +660,17 @@ class RedeemHistoryPage extends StatelessWidget {
       body: history.isEmpty
           ? Center(
               child: Text(
-                l.translate('noRedeemHistory') ??
-                    'No rewards redeemed yet.',
+                l.translate('noRedeemHistory') ?? 'No rewards redeemed yet.',
               ),
             )
           : ListView.separated(
               padding: const EdgeInsets.all(20),
               itemCount: history.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
               itemBuilder: (context, index) {
                 final record = history[index];
-                final date = '${record.time.year}-'
+                final date =
+                    '${record.time.year}-'
                     '${record.time.month.toString().padLeft(2, '0')}-'
                     '${record.time.day.toString().padLeft(2, '0')}';
                 return LifeSurface(

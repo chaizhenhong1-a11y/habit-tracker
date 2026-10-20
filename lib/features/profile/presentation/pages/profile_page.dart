@@ -1,4 +1,10 @@
 import 'dart:io';
+import '../../../../core/storage/photo_store.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/storage/backup_store.dart';
+import '../../../../core/storage/cloud_sync.dart';
+import '../../../auth/presentation/pages/login_page.dart';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -23,6 +29,8 @@ class ProfilePage extends StatefulWidget {
     required this.onLogout,
     required this.locale,
     required this.onLocaleChanged,
+    required this.isGuest,
+    required this.onSignIn,
   });
 
   final ThemeMode themeMode;
@@ -32,6 +40,8 @@ class ProfilePage extends StatefulWidget {
   final VoidCallback onLogout;
   final Locale locale;
   final ValueChanged<Locale> onLocaleChanged;
+  final bool isGuest;
+  final VoidCallback onSignIn;
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -48,16 +58,18 @@ class _ProfilePageState extends State<ProfilePage> {
 
   late final ProfileController _controller;
   final ImagePicker _picker = ImagePicker();
+  bool _backupBusy = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = ProfileController(
-      repository: SharedPreferencesProfileRepository(),
-      habitRepository: HiveHabitRepository.fromHabitsBox(),
-    )
-      ..addListener(_onChanged)
-      ..load();
+    _controller =
+        ProfileController(
+            repository: SharedPreferencesProfileRepository(),
+            habitRepository: HiveHabitRepository.fromHabitsBox(),
+          )
+          ..addListener(_onChanged)
+          ..load();
   }
 
   @override
@@ -70,6 +82,21 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _onChanged() {
     if (mounted) setState(() {});
+  }
+
+  Future<void> _signIn() async {
+    final onSignedIn = widget.onSignIn;
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (loginContext) => LoginPage(
+          onLoginSuccess: () {
+            Navigator.pop(loginContext);
+            onSignedIn();
+          },
+        ),
+      ),
+    );
   }
 
   Future<void> _editUsername() async {
@@ -94,10 +121,8 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Text(loc.translate('cancel') ?? '取消'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(
-              dialogContext,
-              controller.text.trim(),
-            ),
+            onPressed: () =>
+                Navigator.pop(dialogContext, controller.text.trim()),
             child: Text(loc.translate('save') ?? '保存'),
           ),
         ],
@@ -110,17 +135,20 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final image = await _picker.pickImage(
-        source: source,
-        imageQuality: 80,
-      );
+      final image = await _picker.pickImage(source: source, imageQuality: 80);
       if (image != null) {
-        await _controller.setAvatarLocalPath(image.path);
+        await _controller.setAvatarLocalPath(await persistPhoto(image.path));
       }
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('选择图片失败: $error')),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(
+              context,
+            ).text('imagePickFailed', {'error': error.toString()}),
+          ),
+        ),
       );
     }
   }
@@ -143,10 +171,8 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Text(loc.translate('cancel') ?? '取消'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(
-              dialogContext,
-              controller.text.trim(),
-            ),
+            onPressed: () =>
+                Navigator.pop(dialogContext, controller.text.trim()),
             child: Text(loc.translate('confirm') ?? '确定'),
           ),
         ],
@@ -280,35 +306,140 @@ class _ProfilePageState extends State<ProfilePage> {
       hour: _controller.settings.reminderHour,
       minute: _controller.settings.reminderMinute,
     );
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: current,
-    );
+    final picked = await showTimePicker(context: context, initialTime: current);
     if (!mounted || picked == null || picked == current) return;
-    await _controller.setReminderTime(
-      hour: picked.hour,
-      minute: picked.minute,
-    );
+    await _controller.setReminderTime(hour: picked.hour, minute: picked.minute);
   }
 
   Future<void> _exportData() async {
-    final loc = AppLocalizations.of(context);
-    await Clipboard.setData(
-      ClipboardData(text: _controller.exportHabitsJson()),
-    );
-    if (!mounted) return;
-    HapticFeedback.mediumImpact();
+    if (_backupBusy) return;
+    setState(() => _backupBusy = true);
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      final text = await BackupStore(preferences).exportPortable();
+      await Clipboard.setData(ClipboardData(text: text));
+      if (mounted) _backupMessage('dataCopied');
+    } catch (_) {
+      if (mounted) _backupMessage('backupFailed');
+    } finally {
+      if (mounted) setState(() => _backupBusy = false);
+    }
+  }
+
+  void _backupMessage(String key) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          loc.translate('dataCopied') ?? '数据已复制到剪贴板',
+      SnackBar(content: Text(AppLocalizations.of(context).text(key))),
+    );
+  }
+
+  Future<void> _importData() async {
+    if (_backupBusy) return;
+    final l = AppLocalizations.of(context);
+    final input = TextEditingController();
+    final text = await showDialog<String>(
+      context: context,
+      builder: (d) => AlertDialog(
+        title: Text(l.text('restoreData')),
+        content: SizedBox(
+          width: 420,
+          child: TextField(
+            controller: input,
+            minLines: 5,
+            maxLines: 10,
+            decoration: InputDecoration(hintText: l.text('pasteBackup')),
+          ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(d),
+            child: Text(l.text('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(d, input.text),
+            child: Text(l.text('next')),
+          ),
+        ],
       ),
     );
+    input.dispose();
+    if (!mounted || text == null || text.trim().isEmpty) return;
+    setState(() => _backupBusy = true);
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      final backup = BackupStore(preferences);
+      final data = backup.validate(jsonDecode(text));
+      if (!mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (d) => AlertDialog(
+          title: Text(l.text('confirmRestore')),
+          content: Text(
+            l.text('restoreWarning', {
+              'habits': (data['habits'] as List).length,
+              'diaries': (data['diary_entries'] as List).length,
+              'plans': (data['plans'] as List).length,
+            }),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(d, false),
+              child: Text(l.text('cancel')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(d, true),
+              child: Text(l.text('restoreData')),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+      final portable = await backup.preparePortable(text);
+      await CloudSync.instance.replaceLocal(portable);
+    } catch (_) {
+      if (mounted) _backupMessage('restoreFailed');
+    } finally {
+      if (mounted) setState(() => _backupBusy = false);
+    }
+  }
+
+  Future<void> _useCloudVersion() async {
+    final l = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (d) => AlertDialog(
+        title: Text(l.text('useCloudVersion')),
+        content: Text(l.text('cloudConflictWarning')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(d, false),
+            child: Text(l.text('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(d, true),
+            child: Text(l.text('confirm')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await CloudSync.instance.useCloudVersion();
+    } catch (_) {
+      if (mounted) _backupMessage('cloudUnavailable');
+    }
   }
 
   ImageProvider<Object>? _avatarProvider() {
     final settings = _controller.settings;
+    if (settings.avatarLocalPath.startsWith('data:image/')) {
+      return MemoryImage(
+        base64Decode(
+          settings.avatarLocalPath.substring(
+            settings.avatarLocalPath.indexOf(',') + 1,
+          ),
+        ),
+      );
+    }
     if (!kIsWeb && settings.avatarLocalPath.isNotEmpty) {
       final file = File(settings.avatarLocalPath);
       if (file.existsSync()) return FileImage(file);
@@ -384,10 +515,11 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     final settings = _controller.settings;
-    final displayName =
-        settings.username == '用户' || settings.username.isEmpty
-            ? (loc.translate('defaultUser') ?? '用户')
-            : settings.username;
+    final displayName = settings.username == '用户' || settings.username.isEmpty
+        ? (widget.isGuest
+              ? loc.text('guestName')
+              : (loc.translate('defaultUser') ?? '用户'))
+        : settings.username;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -400,10 +532,9 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.fromLTRB(20, 26, 20, 0),
               sliver: SliverToBoxAdapter(
                 child: LifePageHeader(
-                  eyebrow: 'YOU',
-                  title: 'Your life,\nmade intentional.',
-                  subtitle:
-                      'Shape the space around your habits and keep what matters close.',
+                  eyebrow: AppLocalizations.of(context).text('youLabel'),
+                  title: AppLocalizations.of(context).text('profileTitle'),
+                  subtitle: AppLocalizations.of(context).text('profileIntro'),
                 ),
               ),
             ),
@@ -422,10 +553,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   child: Row(
                     children: [
-                      GestureDetector(
-                        onTap: _changeAvatar,
-                        child: _avatar(),
-                      ),
+                      GestureDetector(onTap: _changeAvatar, child: _avatar()),
                       const SizedBox(width: 18),
                       Expanded(
                         child: GestureDetector(
@@ -449,8 +577,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     '点击头像更换 · 点击名字编辑',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color:
-                                      Colors.white.withValues(alpha: .62),
+                                  color: Colors.white.withValues(alpha: .62),
                                 ),
                               ),
                             ],
@@ -473,10 +600,27 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.fromLTRB(20, 30, 20, 130),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
+                  if (widget.isGuest) ...[
+                    _group([
+                      _rowAction(
+                        icon: Icons.cloud_outlined,
+                        title: loc.text('guestName'),
+                        subtitle: loc.text('guestSyncHint'),
+                        trailing: TextButton(
+                          onPressed: _signIn,
+                          child: Text(loc.text('login')),
+                        ),
+                        onTap: _signIn,
+                      ),
+                    ]),
+                    const SizedBox(height: 26),
+                  ],
                   LifeSectionTitle(
                     title:
                         loc.translate('personalization') ?? 'Personalization',
-                    caption: 'Choose how this space feels day to day',
+                    caption: AppLocalizations.of(
+                      context,
+                    ).text('personalizationCaption'),
                   ),
                   const SizedBox(height: 12),
                   _group([
@@ -486,8 +630,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       trailing: widget.themeMode == ThemeMode.light
                           ? _checkedIcon()
                           : null,
-                      onTap: () =>
-                          widget.onThemeModeChanged(ThemeMode.light),
+                      onTap: () => widget.onThemeModeChanged(ThemeMode.light),
                     ),
                     _rowAction(
                       icon: Icons.dark_mode_outlined,
@@ -495,8 +638,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       trailing: widget.themeMode == ThemeMode.dark
                           ? _checkedIcon()
                           : null,
-                      onTap: () =>
-                          widget.onThemeModeChanged(ThemeMode.dark),
+                      onTap: () => widget.onThemeModeChanged(ThemeMode.dark),
                     ),
                     _rowAction(
                       icon: Icons.settings_suggest_outlined,
@@ -504,33 +646,33 @@ class _ProfilePageState extends State<ProfilePage> {
                       trailing: widget.themeMode == ThemeMode.system
                           ? _checkedIcon()
                           : null,
-                      onTap: () =>
-                          widget.onThemeModeChanged(ThemeMode.system),
+                      onTap: () => widget.onThemeModeChanged(ThemeMode.system),
                     ),
                   ]),
                   const SizedBox(height: 26),
                   LifeSectionTitle(
                     title: loc.translate('language') ?? 'Language',
-                    caption: 'Choose how Habit speaks to you',
+                    caption: AppLocalizations.of(
+                      context,
+                    ).text('languageCaption'),
                   ),
                   const SizedBox(height: 12),
                   _group([
                     _languageOption(
-                      '中文',
+                      loc.text('chinese'),
                       widget.locale.languageCode == 'zh',
                       () => widget.onLocaleChanged(const Locale('zh')),
                     ),
                     _languageOption(
-                      'English',
+                      loc.text('english'),
                       widget.locale.languageCode == 'en',
                       () => widget.onLocaleChanged(const Locale('en')),
                     ),
                   ]),
                   const SizedBox(height: 26),
                   LifeSectionTitle(
-                    title:
-                        loc.translate('coreEfficiency') ?? 'Daily rhythm',
-                    caption: 'Gentle structure for the life you want',
+                    title: loc.translate('coreEfficiency') ?? 'Daily rhythm',
+                    caption: AppLocalizations.of(context).text('rhythmCaption'),
                   ),
                   const SizedBox(height: 12),
                   _group([
@@ -539,17 +681,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         Icons.notifications_active_outlined,
                         color: Color(0xFF315D43),
                       ),
-                      title: Text(
-                        loc.translate('dailyReminder') ?? '每日打卡提醒',
-                      ),
+                      title: Text(loc.translate('dailyReminder') ?? '每日打卡提醒'),
                       value: settings.reminderEnabled,
                       onChanged: _controller.setReminderEnabled,
                     ),
                     if (settings.reminderEnabled)
                       _rowAction(
                         icon: Icons.access_time_rounded,
-                        title:
-                            loc.translate('reminderTime') ?? '提醒时间',
+                        title: loc.translate('reminderTime') ?? '提醒时间',
                         trailing: Text(
                           TimeOfDay(
                             hour: settings.reminderHour,
@@ -566,15 +705,15 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 26),
                   LifeSectionTitle(
                     title: loc.translate('dataCenter') ?? 'Your space',
-                    caption: 'Plans, reflections and your own data',
+                    caption: AppLocalizations.of(context).text('dataCaption'),
                   ),
                   const SizedBox(height: 12),
                   _group([
                     _rowAction(
                       icon: Icons.event_note_rounded,
                       title: loc.translate('plan') ?? '我的计划',
-                      subtitle: loc.translate('planSubtitle') ??
-                          '管理日常待办和习惯阶段目标',
+                      subtitle:
+                          loc.translate('planSubtitle') ?? '管理日常待办和习惯阶段目标',
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute<void>(
@@ -585,8 +724,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     _rowAction(
                       icon: Icons.auto_stories_outlined,
                       title: loc.translate('diary') ?? '我的日记',
-                      subtitle: loc.translate('diarySubtitle') ??
-                          '记录生活碎念与复盘随笔',
+                      subtitle: loc.translate('diarySubtitle') ?? '记录生活碎念与复盘随笔',
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute<void>(
@@ -594,28 +732,56 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     ),
+                    if (!widget.isGuest)
+                      ListenableBuilder(
+                        listenable: CloudSync.instance,
+                        builder: (context, _) {
+                          final sync = CloudSync.instance;
+                          return _rowAction(
+                            icon: Icons.cloud_outlined,
+                            title: loc.text('cloudSync'),
+                            subtitle: loc.text(switch (sync.status) {
+                              SyncStatus.synced => 'syncDone',
+                              SyncStatus.syncing => 'syncing',
+                              SyncStatus.conflict => 'syncConflict',
+                              SyncStatus.tooLarge => 'syncTooLarge',
+                              _ => 'syncOffline',
+                            }),
+                            onTap: sync.status == SyncStatus.conflict
+                                ? _useCloudVersion
+                                : () => sync.flush(),
+                          );
+                        },
+                      ),
+                    _rowAction(
+                      icon: Icons.restore_rounded,
+                      title: loc.text('restoreData'),
+                      subtitle: loc.text('restoreDataSubtitle'),
+                      onTap: _importData,
+                    ),
                     _rowAction(
                       icon: Icons.ios_share_rounded,
                       title: loc.translate('exportData') ?? '导出所有习惯数据',
-                      subtitle: loc.translate('exportDataSubtitle') ??
+                      subtitle:
+                          loc.translate('exportDataSubtitle') ??
                           '以 JSON 格式备份你的数据',
                       onTap: _exportData,
                     ),
                   ]),
                   const SizedBox(height: 26),
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 54),
-                      foregroundColor: const Color(0xFF9E4D45),
-                      backgroundColor:
-                          const Color(0xFF9E4D45).withValues(alpha: .07),
+                  if (!widget.isGuest)
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 54),
+                        foregroundColor: const Color(0xFF9E4D45),
+                        backgroundColor: const Color(
+                          0xFF9E4D45,
+                        ).withValues(alpha: .07),
+                      ),
+                      onPressed: widget.onLogout,
+                      icon: const Icon(Icons.logout_rounded),
+                      label: Text(loc.translate('logout') ?? '退出登录账户'),
                     ),
-                    onPressed: widget.onLogout,
-                    icon: const Icon(Icons.logout_rounded),
-                    label: Text(
-                      loc.translate('logout') ?? '退出登录账户',
-                    ),
-                  ),
                 ]),
               ),
             ),
@@ -640,8 +806,7 @@ class _ProfilePageState extends State<ProfilePage> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
         width: 38,
         height: 38,
@@ -650,24 +815,16 @@ class _ProfilePageState extends State<ProfilePage> {
           color: const Color(0xFF315D43).withValues(alpha: .08),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          icon,
-          color: const Color(0xFF315D43),
-          size: 19,
-        ),
+        child: Icon(icon, color: const Color(0xFF315D43), size: 19),
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
       ),
       subtitle: subtitle == null
           ? null
           : Text(subtitle, style: const TextStyle(fontSize: 12)),
-      trailing:
-          trailing ?? const Icon(Icons.chevron_right_rounded, size: 20),
+      trailing: trailing ?? const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: () {
         HapticFeedback.lightImpact();
         onTap();
@@ -676,22 +833,15 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _checkedIcon() => const Icon(
-        Icons.check_circle_rounded,
-        color: Color(0xFF315D43),
-        size: 20,
-      );
+    Icons.check_circle_rounded,
+    color: Color(0xFF315D43),
+    size: 20,
+  );
 
-  Widget _languageOption(
-    String title,
-    bool selected,
-    VoidCallback onTap,
-  ) {
+  Widget _languageOption(String title, bool selected, VoidCallback onTap) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.w600),
-      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
       trailing: selected ? _checkedIcon() : null,
       onTap: onTap,
     );

@@ -24,6 +24,14 @@ class AppLocalizations {
 
   String? translate(String key) => _strings?[key];
 
+  String text(String key, [Map<String, Object> values = const {}]) {
+    var result = _strings?[key] ?? key;
+    for (final entry in values.entries) {
+      result = result.replaceAll('{${entry.key}}', entry.value.toString());
+    }
+    return result;
+  }
+
   static const LocalizationsDelegate<AppLocalizations> delegate =
       _AppLocalizationsDelegate();
 }

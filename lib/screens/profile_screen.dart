@@ -13,5 +13,7 @@ class ProfileScreen extends ProfilePage {
     required super.onLogout,
     required super.locale,
     required super.onLocaleChanged,
+    required super.isGuest,
+    required super.onSignIn,
   });
 }

@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/storage/data_changes.dart';
 
 import '../../domain/entities/profile_settings.dart';
 import '../../domain/repositories/profile_repository.dart';
@@ -35,5 +36,6 @@ class SharedPreferencesProfileRepository implements ProfileRepository {
       preferences.setString(_avatarUrlKey, settings.avatarUrl),
       preferences.setString(_avatarLocalPathKey, settings.avatarLocalPath),
     ]);
+    DataChanges.notify();
   }
 }

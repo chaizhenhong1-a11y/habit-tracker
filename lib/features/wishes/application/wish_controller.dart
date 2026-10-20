@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../../core/storage/points_ledger.dart';
 
 import '../../habits/domain/repositories/habit_repository.dart';
 import '../domain/entities/redeem_record.dart';
@@ -19,12 +20,9 @@ class WishController extends ChangeNotifier {
   List<Reward> get customRewards => List.unmodifiable(_customRewards);
   List<RedeemRecord> get redeemHistory => List.unmodifiable(_redeemHistory);
 
-  int get totalPoints => habitRepository.getAll().fold(
-    0,
-    (total, habit) => total + habit.completedDates.length,
-  );
+  int get totalPoints => PointsLedger.opened().totalEarned;
 
-  int get availablePoints => totalPoints - _spentPoints;
+  int get availablePoints => (totalPoints - _spentPoints).clamp(0, totalPoints);
 
   Future<void> load() async {
     final data = await repository.load();

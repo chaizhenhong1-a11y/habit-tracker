@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import '../../l10n/app_localizations.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../features/analytics/presentation/pages/data_page.dart';
@@ -17,6 +19,8 @@ class MainNavigation extends StatefulWidget {
     required this.onSeedColorChanged,
     required this.onLocaleChanged,
     required this.onLogout,
+    required this.isGuest,
+    required this.onSignIn,
   });
 
   final ThemeMode themeMode;
@@ -26,6 +30,8 @@ class MainNavigation extends StatefulWidget {
   final ValueChanged<Color> onSeedColorChanged;
   final ValueChanged<Locale> onLocaleChanged;
   final VoidCallback onLogout;
+  final bool isGuest;
+  final VoidCallback onSignIn;
 
   @override
   State<MainNavigation> createState() => _MainNavigationState();
@@ -44,24 +50,26 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   List<Widget> _buildPages() => [
-        const HabitListPage(),
-        WishPage(key: _wishKey),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 96),
-          child: DataPage(key: _dataKey),
-        ),
-        _buildProfileScreen(),
-      ];
+    const HabitListPage(),
+    WishPage(key: _wishKey),
+    Padding(
+      padding: const EdgeInsets.only(bottom: 96),
+      child: DataPage(key: _dataKey),
+    ),
+    _buildProfileScreen(),
+  ];
 
   ProfilePage _buildProfileScreen() => ProfilePage(
-        themeMode: widget.themeMode,
-        seedColor: widget.seedColor,
-        locale: widget.locale,
-        onThemeModeChanged: widget.onThemeModeChanged,
-        onSeedColorChanged: widget.onSeedColorChanged,
-        onLocaleChanged: widget.onLocaleChanged,
-        onLogout: widget.onLogout,
-      );
+    themeMode: widget.themeMode,
+    seedColor: widget.seedColor,
+    locale: widget.locale,
+    onThemeModeChanged: widget.onThemeModeChanged,
+    onSeedColorChanged: widget.onSeedColorChanged,
+    onLocaleChanged: widget.onLocaleChanged,
+    onLogout: widget.onLogout,
+    isGuest: widget.isGuest,
+    onSignIn: widget.onSignIn,
+  );
 
   @override
   void didUpdateWidget(covariant MainNavigation oldWidget) {
@@ -113,12 +121,29 @@ class _LifeNavigationBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
 
-  static const _items = <({IconData icon, IconData selectedIcon, String label})>[
-    (icon: Icons.eco_outlined, selectedIcon: Icons.eco_rounded, label: 'Today'),
-    (icon: Icons.route_outlined, selectedIcon: Icons.route_rounded, label: 'Journey'),
-    (icon: Icons.auto_graph_outlined, selectedIcon: Icons.auto_graph_rounded, label: 'Insights'),
-    (icon: Icons.person_outline_rounded, selectedIcon: Icons.person_rounded, label: 'You'),
-  ];
+  static const _items =
+      <({IconData icon, IconData selectedIcon, String label})>[
+        (
+          icon: Icons.eco_outlined,
+          selectedIcon: Icons.eco_rounded,
+          label: 'navToday',
+        ),
+        (
+          icon: Icons.route_outlined,
+          selectedIcon: Icons.route_rounded,
+          label: 'navJourney',
+        ),
+        (
+          icon: Icons.auto_graph_outlined,
+          selectedIcon: Icons.auto_graph_rounded,
+          label: 'navInsights',
+        ),
+        (
+          icon: Icons.person_outline_rounded,
+          selectedIcon: Icons.person_rounded,
+          label: 'navYou',
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +157,9 @@ class _LifeNavigationBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(26),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF173E2D).withValues(alpha: dark ? .20 : .10),
+              color: const Color(
+                0xFF173E2D,
+              ).withValues(alpha: dark ? .20 : .10),
               blurRadius: 28,
               offset: const Offset(0, 12),
             ),
@@ -195,7 +222,7 @@ class _NavItem extends StatelessWidget {
     return Semantics(
       selected: selected,
       button: true,
-      label: item.label,
+      label: AppLocalizations.of(context).text(item.label),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(19),
@@ -218,7 +245,7 @@ class _NavItem extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                item.label,
+                AppLocalizations.of(context).text(item.label),
                 style: TextStyle(
                   fontSize: 10.5,
                   fontWeight: selected ? FontWeight.w800 : FontWeight.w600,

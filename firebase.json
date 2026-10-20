@@ -1,0 +1,33 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "habittracker-czh-20261020",
+          "appId": "1:612575857257:android:d6241f6d8c53351f4e30f8",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "habittracker-czh-20261020",
+          "configurations": {
+            "android": "1:612575857257:android:d6241f6d8c53351f4e30f8",
+            "web": "1:612575857257:web:0ee01009b75ba5754e30f8"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "asia-southeast1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "auth": {
+    "providers": {
+      "emailPassword": true
+    }
+  }
+}

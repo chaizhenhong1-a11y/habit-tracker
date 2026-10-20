@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase CLI local state and logs
+.firebase/
+firebase-debug.log*
