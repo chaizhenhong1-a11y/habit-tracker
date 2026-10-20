@@ -3,6 +3,26 @@
 Flutter habit tracker with optional Firebase accounts, Chinese/English UI,
 daily progress, wishes, points, plans and diary entries.
 
+## Source structure
+
+```text
+lib/
+  main.dart             # Entry point
+  bootstrap.dart        # Storage, Firebase and app initialization
+  app/                  # App root, navigation, theme and shared widgets
+  core/                 # Shared storage, sync, backup and notification services
+  features/             # Feature implementations
+    <feature>/
+      application/      # Controllers and use cases
+      data/             # Persistence and external services
+      domain/           # Entities and repository contracts
+      presentation/     # Pages and feature widgets
+  l10n/                 # Localization loader
+```
+
+Import actual implementations from these directories. The unused legacy
+`screens/`, `models/` and `services/` compatibility wrappers have been removed.
+
 ## Local and account data
 
 - The app starts in guest mode. Registration and internet access are not required for check-ins.

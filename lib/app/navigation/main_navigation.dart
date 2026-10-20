@@ -56,10 +56,10 @@ class _MainNavigationState extends State<MainNavigation> {
       padding: const EdgeInsets.only(bottom: 96),
       child: DataPage(key: _dataKey),
     ),
-    _buildProfileScreen(),
+    _buildProfilePage(),
   ];
 
-  ProfilePage _buildProfileScreen() => ProfilePage(
+  ProfilePage _buildProfilePage() => ProfilePage(
     themeMode: widget.themeMode,
     seedColor: widget.seedColor,
     locale: widget.locale,
@@ -74,7 +74,7 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   void didUpdateWidget(covariant MainNavigation oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _pages[3] = _buildProfileScreen();
+    _pages[3] = _buildProfilePage();
   }
 
   void _selectDestination(int index) {
