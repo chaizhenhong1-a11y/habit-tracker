@@ -129,93 +129,116 @@ class WishPageState extends State<WishPage> {
     final reward = await showModalBottomSheet<Reward>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
       builder: (sheetContext) => StatefulBuilder(
-        builder: (context, setSheetState) => Padding(
-          padding: EdgeInsets.fromLTRB(
-            22,
-            16,
-            22,
-            MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 42,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 22),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
+        builder: (context, setSheetState) {
+          final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+          return Padding(
+            padding: EdgeInsets.only(bottom: keyboard),
+            child: DraggableScrollableSheet(
+              expand: false,
+              initialChildSize: .72,
+              minChildSize: .45,
+              maxChildSize: .94,
+              builder: (context, scrollController) => Material(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
                 ),
-                Text(
-                  l.translate('addWish') ?? 'Create a reward',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Give your consistency something meaningful to move toward.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  height: 52,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      for (final emoji in _emojis)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ChoiceChip(
-                            label: Text(emoji, style: const TextStyle(fontSize: 19)),
-                            selected: selectedEmoji == emoji,
-                            onSelected: (_) => setSheetState(() => selectedEmoji = emoji),
-                          ),
+                clipBehavior: Clip.antiAlias,
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.fromLTRB(22, 12, 22, 28),
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 42,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 22),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                    ],
-                  ),
+                      ),
+                    ),
+                    Text(
+                      l.translate('addWish') ?? 'Create a reward',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Give your consistency something meaningful to move toward.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: 52,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _emojis.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final emoji = _emojis[index];
+                          return ChoiceChip(
+                            label: Text(
+                              emoji,
+                              style: const TextStyle(fontSize: 19),
+                            ),
+                            selected: selectedEmoji == emoji,
+                            onSelected: (_) => setSheetState(
+                              () => selectedEmoji = emoji,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    TextField(
+                      controller: nameController,
+                      textInputAction: TextInputAction.next,
+                      decoration: InputDecoration(
+                        labelText:
+                            l.translate('wishNameLabel') ?? 'Reward name',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: costController,
+                      keyboardType: TextInputType.number,
+                      textInputAction: TextInputAction.done,
+                      decoration: InputDecoration(
+                        labelText: l.translate('targetPointsLabel') ??
+                            'Points needed',
+                        prefixIcon:
+                            const Icon(Icons.auto_awesome_rounded),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton(
+                      onPressed: () {
+                        final name = nameController.text.trim();
+                        final cost = int.tryParse(costController.text.trim());
+                        if (name.isEmpty || cost == null || cost <= 0) return;
+                        Navigator.pop(
+                          sheetContext,
+                          Reward(
+                            name: name,
+                            emoji: selectedEmoji,
+                            cost: cost,
+                          ),
+                        );
+                      },
+                      child: Text(
+                        l.translate('publishWish') ?? 'Add to journey',
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 18),
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: l.translate('wishNameLabel') ?? 'Reward name',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: costController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: l.translate('targetPointsLabel') ?? 'Points needed',
-                    prefixIcon: const Icon(Icons.auto_awesome_rounded),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: () {
-                      final name = nameController.text.trim();
-                      final cost = int.tryParse(costController.text.trim());
-                      if (name.isEmpty || cost == null || cost <= 0) return;
-                      Navigator.pop(
-                        sheetContext,
-                        Reward(name: name, emoji: selectedEmoji, cost: cost),
-                      );
-                    },
-                    child: Text(l.translate('publishWish') ?? 'Add to journey'),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
 
@@ -269,7 +292,8 @@ class WishPageState extends State<WishPage> {
                   child: LifePageHeader(
                     eyebrow: 'JOURNEY',
                     title: 'Reward the life\nyou are building.',
-                    subtitle: 'Turn daily consistency into moments worth looking forward to.',
+                    subtitle:
+                        'Turn daily consistency into moments worth looking forward to.',
                     trailing: IconButton.filledTonal(
                       onPressed: () => Navigator.push(
                         context,
@@ -298,15 +322,18 @@ class WishPageState extends State<WishPage> {
                 padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
                 sliver: SliverToBoxAdapter(
                   child: LifeSectionTitle(
-                    title: l.translate('presetRewards') ?? 'Curated rewards',
-                    caption: 'Small celebrations for meaningful consistency',
+                    title:
+                        l.translate('presetRewards') ?? 'Curated rewards',
+                    caption:
+                        'Small celebrations for meaningful consistency',
                   ),
                 ),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
                 sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
@@ -317,7 +344,8 @@ class WishPageState extends State<WishPage> {
                       final reward = presets[index];
                       return _RewardCard(
                         reward: reward,
-                        canAfford: _controller.availablePoints >= reward.cost,
+                        canAfford:
+                            _controller.availablePoints >= reward.cost,
                         onTap: () => _redeem(reward),
                       );
                     },
@@ -369,7 +397,8 @@ class WishPageState extends State<WishPage> {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(20, 14, 20, 130),
                   sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
@@ -380,7 +409,8 @@ class WishPageState extends State<WishPage> {
                         final reward = _controller.customRewards[index];
                         return _RewardCard(
                           reward: reward,
-                          canAfford: _controller.availablePoints >= reward.cost,
+                          canAfford:
+                              _controller.availablePoints >= reward.cost,
                           onTap: () => _redeem(reward),
                           onLongPress: () => _delete(reward),
                         );
@@ -421,7 +451,8 @@ class _BalanceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF173E2D).withValues(alpha: .18),
+            color:
+                const Color(0xFF173E2D).withValues(alpha: .18),
             blurRadius: 30,
             offset: const Offset(0, 14),
           ),
@@ -531,7 +562,9 @@ class _RewardCard extends StatelessWidget {
         child: Ink(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: dark ? const Color(0xFF171F19) : const Color(0xFFFFFCF6),
+            color: dark
+                ? const Color(0xFF171F19)
+                : const Color(0xFFFFFCF6),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: const Color(0xFF315D43).withValues(alpha: .1),
@@ -543,9 +576,11 @@ class _RewardCard extends StatelessWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE2C58A).withValues(alpha: .18),
+                    color:
+                        const Color(0xFFE2C58A).withValues(alpha: .18),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -565,7 +600,8 @@ class _RewardCard extends StatelessWidget {
                 reward.name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
               ),
               const SizedBox(height: 8),
               Text(
@@ -600,7 +636,8 @@ class RedeemHistoryPage extends StatelessWidget {
       body: history.isEmpty
           ? Center(
               child: Text(
-                l.translate('noRedeemHistory') ?? 'No rewards redeemed yet.',
+                l.translate('noRedeemHistory') ??
+                    'No rewards redeemed yet.',
               ),
             )
           : ListView.separated(
