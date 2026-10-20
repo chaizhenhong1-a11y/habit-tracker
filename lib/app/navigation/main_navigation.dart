@@ -2,9 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../features/habits/presentation/pages/habit_list_page.dart';
-import '../../l10n/app_localizations.dart';
 import '../../features/analytics/presentation/pages/data_page.dart';
+import '../../features/habits/presentation/pages/habit_list_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/wishes/presentation/pages/wish_page.dart';
 
@@ -44,26 +43,22 @@ class _MainNavigationState extends State<MainNavigation> {
     _pages = _buildPages();
   }
 
-  List<Widget> _buildPages() {
-    return [
-      const HabitListPage(),
-      WishPage(key: _wishKey),
-      DataPage(key: _dataKey),
-      _buildProfileScreen(),
-    ];
-  }
+  List<Widget> _buildPages() => [
+        const HabitListPage(),
+        WishPage(key: _wishKey),
+        DataPage(key: _dataKey),
+        _buildProfileScreen(),
+      ];
 
-  ProfilePage _buildProfileScreen() {
-    return ProfilePage(
-      themeMode: widget.themeMode,
-      seedColor: widget.seedColor,
-      locale: widget.locale,
-      onThemeModeChanged: widget.onThemeModeChanged,
-      onSeedColorChanged: widget.onSeedColorChanged,
-      onLocaleChanged: widget.onLocaleChanged,
-      onLogout: widget.onLogout,
-    );
-  }
+  ProfilePage _buildProfileScreen() => ProfilePage(
+        themeMode: widget.themeMode,
+        seedColor: widget.seedColor,
+        locale: widget.locale,
+        onThemeModeChanged: widget.onThemeModeChanged,
+        onSeedColorChanged: widget.onSeedColorChanged,
+        onLocaleChanged: widget.onLocaleChanged,
+        onLogout: widget.onLogout,
+      );
 
   @override
   void didUpdateWidget(covariant MainNavigation oldWidget) {
@@ -72,8 +67,8 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   void _selectDestination(int index) {
+    if (index == _selectedIndex) return;
     setState(() => _selectedIndex = index);
-
     if (index == 1) {
       _wishKey.currentState?.refreshPoints();
     } else if (index == 2) {
@@ -83,88 +78,137 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final loc = AppLocalizations.of(context);
-
     return Scaffold(
+      extendBody: true,
       body: IndexedStack(index: _selectedIndex, children: _pages),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-        child: Container(
+      bottomNavigationBar: _LifeNavigationBar(
+        selectedIndex: _selectedIndex,
+        onSelected: _selectDestination,
+      ),
+    );
+  }
+}
+
+class _LifeNavigationBar extends StatelessWidget {
+  const _LifeNavigationBar({
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  static const _items = <({IconData icon, IconData selectedIcon, String label})>[
+    (icon: Icons.today_outlined, selectedIcon: Icons.today_rounded, label: 'Today'),
+    (icon: Icons.route_outlined, selectedIcon: Icons.route_rounded, label: 'Journey'),
+    (icon: Icons.insights_outlined, selectedIcon: Icons.insights_rounded, label: 'Insights'),
+    (icon: Icons.person_outline_rounded, selectedIcon: Icons.person_rounded, label: 'You'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+
+    return SafeArea(
+      minimum: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            height: 70,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+            decoration: BoxDecoration(
+              color: (dark ? const Color(0xFF1A1D19) : Colors.white)
+                  .withValues(alpha: .86),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: scheme.outlineVariant.withValues(alpha: dark ? .2 : .38),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: dark ? .24 : .07),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                for (var index = 0; index < _items.length; index++)
+                  Expanded(
+                    child: _NavItem(
+                      item: _items[index],
+                      selected: selectedIndex == index,
+                      onTap: () => onSelected(index),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ({IconData icon, IconData selectedIcon, String label}) item;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final muted = scheme.onSurfaceVariant.withValues(alpha: .62);
+
+    return Semantics(
+      selected: selected,
+      button: true,
+      label: item.label,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(32),
-            boxShadow: [
-              BoxShadow(
-                color: isDark
-                    ? Colors.black.withValues(alpha: 0.3)
-                    : colorScheme.primary.withValues(alpha: 0.06),
-                blurRadius: 30,
-                offset: const Offset(0, 12),
+            color: selected
+                ? scheme.primary.withValues(alpha: .11)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedScale(
+                scale: selected ? 1.06 : 1,
+                duration: const Duration(milliseconds: 180),
+                child: Icon(
+                  selected ? item.selectedIcon : item.icon,
+                  size: 22,
+                  color: selected ? scheme.primary : muted,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                item.label,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                  letterSpacing: .1,
+                  color: selected ? scheme.primary : muted,
+                ),
               ),
             ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(32),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-              child: NavigationBarTheme(
-                data: NavigationBarThemeData(
-                  indicatorColor: colorScheme.primary.withValues(alpha: 0.12),
-                  labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                    final selected = states.contains(WidgetState.selected);
-                    return TextStyle(
-                      fontSize: 11,
-                      fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
-                      letterSpacing: 0.5,
-                      color: selected
-                          ? colorScheme.primary
-                          : colorScheme.onSurface.withValues(alpha: 0.4),
-                    );
-                  }),
-                  iconTheme: WidgetStateProperty.resolveWith((states) {
-                    final selected = states.contains(WidgetState.selected);
-                    return IconThemeData(
-                      size: 24,
-                      color: selected
-                          ? colorScheme.primary
-                          : colorScheme.onSurface.withValues(alpha: 0.4),
-                    );
-                  }),
-                ),
-                child: NavigationBar(
-                  selectedIndex: _selectedIndex,
-                  onDestinationSelected: _selectDestination,
-                  backgroundColor: isDark
-                      ? const Color(0xFF1E1E2A).withValues(alpha: 0.7)
-                      : Colors.white.withValues(alpha: 0.75),
-                  height: 76,
-                  elevation: 0,
-                  destinations: [
-                    NavigationDestination(
-                      icon: const Icon(Icons.check_circle_outline_rounded),
-                      selectedIcon: const Icon(Icons.check_circle_rounded),
-                      label: loc.translate('habitTab') ?? '习惯',
-                    ),
-                    NavigationDestination(
-                      icon: const Icon(Icons.star_outline_rounded),
-                      selectedIcon: const Icon(Icons.star_rounded),
-                      label: loc.translate('wishTab') ?? '愿望',
-                    ),
-                    NavigationDestination(
-                      icon: const Icon(Icons.analytics_outlined),
-                      selectedIcon: const Icon(Icons.analytics_rounded),
-                      label: loc.translate('dataTab') ?? '数据',
-                    ),
-                    NavigationDestination(
-                      icon: const Icon(Icons.face_outlined),
-                      selectedIcon: const Icon(Icons.face_rounded),
-                      label: loc.translate('profileTab') ?? '我的',
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
         ),
       ),
