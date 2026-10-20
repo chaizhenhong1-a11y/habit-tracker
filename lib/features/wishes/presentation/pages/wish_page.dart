@@ -393,10 +393,6 @@ class WishPageState extends State<WishPage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addWish,
-        child: const Icon(Icons.add_rounded),
-      ),
     );
   }
 }
