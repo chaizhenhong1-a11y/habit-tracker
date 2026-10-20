@@ -77,75 +77,59 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      body: IndexedStack(index: _selectedIndex, children: _pages),
-      bottomNavigationBar: _LifeNavigationBar(
-        selectedIndex: _selectedIndex,
-        onSelected: _selectDestination,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Scaffold(
+        extendBody: true,
+        body: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFFFFAF1), Color(0xFFF2F1E7)],
+            ),
+          ),
+          child: IndexedStack(index: _selectedIndex, children: _pages),
+        ),
+        bottomNavigationBar: _LifeNavigationBar(
+          selectedIndex: _selectedIndex,
+          onSelected: _selectDestination,
+        ),
+      );
 }
 
 class _LifeNavigationBar extends StatelessWidget {
-  const _LifeNavigationBar({
-    required this.selectedIndex,
-    required this.onSelected,
-  });
-
+  const _LifeNavigationBar({required this.selectedIndex, required this.onSelected});
   final int selectedIndex;
   final ValueChanged<int> onSelected;
 
   static const _items = <({IconData icon, IconData selectedIcon, String label})>[
-    (icon: Icons.today_outlined, selectedIcon: Icons.today_rounded, label: 'Today'),
+    (icon: Icons.eco_outlined, selectedIcon: Icons.eco_rounded, label: 'Today'),
     (icon: Icons.route_outlined, selectedIcon: Icons.route_rounded, label: 'Journey'),
-    (icon: Icons.insights_outlined, selectedIcon: Icons.insights_rounded, label: 'Insights'),
+    (icon: Icons.auto_graph_outlined, selectedIcon: Icons.auto_graph_rounded, label: 'Insights'),
     (icon: Icons.person_outline_rounded, selectedIcon: Icons.person_rounded, label: 'You'),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final dark = Theme.of(context).brightness == Brightness.dark;
-
     return SafeArea(
       minimum: const EdgeInsets.fromLTRB(18, 0, 18, 12),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(26),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
           child: Container(
-            height: 70,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+            height: 72,
+            padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: (dark ? const Color(0xFF1A1D19) : Colors.white)
-                  .withValues(alpha: .86),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: scheme.outlineVariant.withValues(alpha: dark ? .2 : .38),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: dark ? .24 : .07),
-                  blurRadius: 30,
-                  offset: const Offset(0, 12),
-                ),
-              ],
+              color: (dark ? const Color(0xFF172019) : const Color(0xFFFFFCF6)).withValues(alpha: .88),
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: Colors.white.withValues(alpha: dark ? .08 : .75)),
+              boxShadow: [BoxShadow(color: const Color(0xFF173E2D).withValues(alpha: dark ? .22 : .12), blurRadius: 34, offset: const Offset(0, 14))],
             ),
-            child: Row(
-              children: [
-                for (var index = 0; index < _items.length; index++)
-                  Expanded(
-                    child: _NavItem(
-                      item: _items[index],
-                      selected: selectedIndex == index,
-                      onTap: () => onSelected(index),
-                    ),
-                  ),
-              ],
-            ),
+            child: Row(children: [
+              for (var i = 0; i < _items.length; i++)
+                Expanded(child: _NavItem(item: _items[i], selected: selectedIndex == i, onTap: () => onSelected(i))),
+            ]),
           ),
         ),
       ),
@@ -154,62 +138,35 @@ class _LifeNavigationBar extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  const _NavItem({
-    required this.item,
-    required this.selected,
-    required this.onTap,
-  });
-
+  const _NavItem({required this.item, required this.selected, required this.onTap});
   final ({IconData icon, IconData selectedIcon, String label}) item;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final muted = scheme.onSurfaceVariant.withValues(alpha: .62);
-
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final active = dark ? const Color(0xFFA9C4A7) : const Color(0xFF194B36);
+    final muted = dark ? const Color(0xFF87948A) : const Color(0xFF7A827C);
     return Semantics(
       selected: selected,
       button: true,
       label: item.label,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(19),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
-            color: selected
-                ? scheme.primary.withValues(alpha: .11)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
+            color: selected ? active.withValues(alpha: dark ? .16 : .09) : Colors.transparent,
+            borderRadius: BorderRadius.circular(19),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AnimatedScale(
-                scale: selected ? 1.06 : 1,
-                duration: const Duration(milliseconds: 180),
-                child: Icon(
-                  selected ? item.selectedIcon : item.icon,
-                  size: 22,
-                  color: selected ? scheme.primary : muted,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                item.label,
-                maxLines: 1,
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                  letterSpacing: .1,
-                  color: selected ? scheme.primary : muted,
-                ),
-              ),
-            ],
-          ),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(selected ? item.selectedIcon : item.icon, size: 22, color: selected ? active : muted),
+            const SizedBox(height: 4),
+            Text(item.label, style: TextStyle(fontSize: 10.5, fontWeight: selected ? FontWeight.w800 : FontWeight.w600, color: selected ? active : muted)),
+          ]),
         ),
       ),
     );
